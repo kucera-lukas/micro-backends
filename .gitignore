@@ -13,3 +13,23 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Go workspace file
+go.work
+
+# Environment
+*.env
+
+# Test coverage
+cover.html
+cover.out
+
+# IDE
+.idea
+
+# backups
+*.bak
+
+.tool-versions
+
+bin

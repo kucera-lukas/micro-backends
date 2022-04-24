@@ -1,0 +1,83 @@
+services:
+  backend_service:
+    build:
+      context: backend_service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - backend_service/.env
+    networks:
+      - micro_backends
+    depends_on:
+      - mongo_service
+      - postgres_service
+
+  mongo_service:
+    build:
+      context: mongo_service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    env_file:
+      - mongo_service/.env
+    networks:
+      - micro_backends
+    depends_on:
+      - mongodb
+
+  postgres_service:
+    build:
+      context: postgres_service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    env_file:
+      - postgres_service/.env
+    networks:
+      - micro_backends
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  mongodb:
+    container_name: mongodb
+    image: mongo:latest
+    hostname: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb:/data/db
+    networks:
+      - micro_backends
+
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    restart: always
+    hostname: postgres
+    #command: "postgres"
+    ports:
+      - "5433:5433"
+    environment:
+      POSTGRES_DATABASE: micro_backends
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - micro_backends
+
+volumes:
+  mongodb:
+  postgres:
+
+networks:
+  micro_backends:
+    driver: bridge
