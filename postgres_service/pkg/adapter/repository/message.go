@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/adapter/controller"
+	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/model"
 )
 
 // NewMessageRepository returns implementation of the controller.Message interface.
@@ -25,7 +26,7 @@ func (r *imageRepository) Create(
 
 	row := r.client.QueryRow(ctx, "INSERT INTO messages (data) VALUES ($1) RETURNING messages.id;", data)
 
-	err := row.Scan(messageID)
+	err := row.Scan(&messageID)
 	if err != nil {
 		return 0, err
 	}
@@ -36,12 +37,8 @@ func (r *imageRepository) Create(
 func (r *imageRepository) Count(ctx context.Context) (uint32, error) {
 	var count uint32
 
-	rows, err := r.client.Query(ctx, "SELECT count(*) FROM messages;")
-	if err != nil {
-		return 0, fmt.Errorf("count: %w", err)
-	}
-
-	err = rows.Scan(count)
+	row := r.client.QueryRow(ctx, "SELECT count(*) FROM messages;")
+	err := row.Scan(&count)
 	if err != nil {
 		return 0, fmt.Errorf("count: %w", err)
 	}
@@ -49,17 +46,23 @@ func (r *imageRepository) Count(ctx context.Context) (uint32, error) {
 	return count, nil
 }
 
-func (r *imageRepository) List(ctx context.Context) (string, error) {
-	var data string
+func (r *imageRepository) List(ctx context.Context) ([]model.Message, error) {
+	var data []model.Message
 
-	rows, err := r.client.Query(ctx, "WITH cte AS (SELECT * FROM messages) SELECT to_json(cte) FROM cte;")
+	rows, err := r.client.Query(ctx, "SELECT * FROM messages LIMIT 100;")
 	if err != nil {
-		return "", fmt.Errorf("count: %w", err)
+		return nil, fmt.Errorf("count: %w", err)
 	}
 
-	err = rows.Scan(data)
-	if err != nil {
-		return "", fmt.Errorf("count: %w", err)
+	for rows.Next() {
+		var msg model.Message
+
+		err := rows.Scan(&msg.Id, &msg.Data, &msg.Created, &msg.Modified)
+		if err != nil {
+			return nil, fmt.Errorf("list: %w", err)
+		}
+
+		data = append(data, msg)
 	}
 
 	return data, nil

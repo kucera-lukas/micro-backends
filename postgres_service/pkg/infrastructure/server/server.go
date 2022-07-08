@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -16,6 +15,8 @@ import (
 	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/infrastructure/env"
 	"github.com/kucera-lukas/micro-backends/postgres-service/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -63,8 +64,14 @@ func (s *Server) GetMessages(
 	}
 
 	var messages []*proto.GetMessageResponse
-	if err := json.Unmarshal([]byte(messageList), &messages); err != nil {
-		return nil, err
+
+	for _, msg := range messageList {
+		messages = append(messages, &proto.GetMessageResponse{
+			Id:       msg.Id,
+			Data:     msg.Data,
+			Created:  timestamppb.New(msg.Created),
+			Modified: timestamppb.New(msg.Modified),
+		})
 	}
 
 	return &proto.GetMessagesResponse{Messages: messages}, nil
@@ -81,6 +88,7 @@ func Run(config *env.Config) {
 
 	srv := grpc.NewServer()
 	proto.RegisterMessageServiceServer(srv, &Server{controller: ctrl})
+	reflection.Register(srv)
 
 	address := fmt.Sprintf("0.0.0.0:%d", config.Port)
 	lis, err := net.Listen("tcp", address)
