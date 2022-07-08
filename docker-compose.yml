@@ -57,15 +57,15 @@ services:
     image: postgres:latest
     restart: always
     hostname: postgres
-    #command: "postgres"
     ports:
-      - "5433:5433"
+      - "5433:5432"
     environment:
-      POSTGRES_DATABASE: micro_backends
+      POSTGRES_DB: micro_backends
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
       - postgres:/var/lib/postgresql/data
+      - ./postgres_service/init/database.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s

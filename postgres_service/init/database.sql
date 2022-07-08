@@ -1,7 +1,7 @@
 CREATE TABLE "messages" (
     "id" SERIAL PRIMARY KEY NOT NULL,
     "data" character varying NOT NULL,
-    "created" timestamp(0)with time zone NOT NULL,
+    "created" timestamp(0)with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "modified" timestamp(0)with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
