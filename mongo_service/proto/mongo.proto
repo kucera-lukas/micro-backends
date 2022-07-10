@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "./;proto";
+
+import "google/protobuf/timestamp.proto";
+
+message NewMessageRequest{
+    string data = 1;
+}
+
+message NewMessageResponse{
+    string id = 1;
+}
+
+message MessageCountRequest{}
+
+message MessageCountResponse{
+    int64 count = 1;
+}
+
+message GetMessagesRequest{}
+
+message GetMessageResponse{
+    string id = 1;
+    string data = 2;
+    google.protobuf.Timestamp created = 3;
+    google.protobuf.Timestamp modified = 4;
+}
+message GetMessagesResponse{
+    repeated GetMessageResponse messages = 1;
+}
+
+service MessageService{
+    rpc NewMessage(NewMessageRequest) returns (NewMessageResponse) {};
+    rpc MessageCount(MessageCountRequest) returns (MessageCountResponse) {};
+    rpc GetMessages(GetMessagesRequest) returns (GetMessagesResponse) {};
+}

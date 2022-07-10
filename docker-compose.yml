@@ -24,7 +24,8 @@ services:
     networks:
       - micro_backends
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
 
   postgres_service:
     build:
@@ -42,13 +43,23 @@ services:
 
   mongodb:
     container_name: mongodb
-    image: mongo:latest
-    hostname: mongodb
+    image: bitnami/mongodb:latest
     restart: always
     ports:
-      - "27017:27017"
+      - "27018:27017"
+    environment:
+      MONGODB_ROOT_USER: mongo
+      MONGODB_ROOT_PASSWORD: mongo
+      MONGODB_USERNAME: mongo
+      MONGODB_PASSWORD: mongo
+      MONGODB_DATABASE: micro_backends
     volumes:
-      - mongodb:/data/db
+      - mongodb:/bitnami/mongodb
+    healthcheck:
+      test: echo 'db.runCommand({serverStatus:1}).ok' | mongo -u mongo -p mongo --quiet | grep 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - micro_backends
 

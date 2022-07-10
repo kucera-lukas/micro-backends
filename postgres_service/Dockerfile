@@ -17,6 +17,7 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY --from=builder /build/postgres ./postgres
+COPY .env .
 
 EXPOSE 80
 ENTRYPOINT ["./postgres"]

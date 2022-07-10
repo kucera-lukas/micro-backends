@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+
 	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/infrastructure/env"
 )
 

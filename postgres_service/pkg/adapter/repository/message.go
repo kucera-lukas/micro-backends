@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+
 	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/adapter/controller"
 	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/model"
 )

@@ -13,11 +13,11 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/adapter/controller"
-	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/adapter/repository"
-	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/infrastructure/database"
-	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/infrastructure/env"
-	"github.com/kucera-lukas/micro-backends/postgres-service/proto"
+	"github.com/kucera-lukas/micro-backends/mongo-service/pkg/adapter/controller"
+	"github.com/kucera-lukas/micro-backends/mongo-service/pkg/adapter/repository"
+	"github.com/kucera-lukas/micro-backends/mongo-service/pkg/infrastructure/env"
+	"github.com/kucera-lukas/micro-backends/mongo-service/pkg/infrastructure/mongo"
+	"github.com/kucera-lukas/micro-backends/mongo-service/proto"
 )
 
 const (
@@ -40,7 +40,7 @@ func (s *Server) NewMessage(
 		return nil, err
 	}
 
-	return &proto.NewMessageResponse{Id: id}, nil
+	return &proto.NewMessageResponse{Id: id.Hex()}, nil
 }
 
 func (s *Server) MessageCount(
@@ -68,7 +68,7 @@ func (s *Server) GetMessages(
 
 	for _, msg := range messageList {
 		messages = append(messages, &proto.GetMessageResponse{
-			Id:       msg.Id,
+			Id:       msg.ID.String(),
 			Data:     msg.Data,
 			Created:  timestamppb.New(msg.Created),
 			Modified: timestamppb.New(msg.Modified),
@@ -80,11 +80,11 @@ func (s *Server) GetMessages(
 
 // Run runs the server with the given env.Config configuration.
 func Run(config *env.Config) {
-	databaseClient := database.MustNew(config)
-	defer databaseClient.Close()
+	mongoClient := mongo.MustNew(config)
+	defer mongo.Disconnect(mongoClient)
 
 	ctrl := controller.Controller{
-		Message: repository.NewMessageRepository(databaseClient),
+		Message: repository.NewMessageRepository(mongoClient),
 	}
 
 	srv := grpc.NewServer()

@@ -17,6 +17,7 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY --from=builder /build/backend ./backend
+COPY .env .
 
 EXPOSE 80
 ENTRYPOINT ["./backend"]

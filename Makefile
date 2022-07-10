@@ -1,5 +1,5 @@
 GOBIN ?= $(shell pwd)/bin
-PATH := bin:$(PATH)
+PATH := $(GOBIN):$(PATH)
 export
 
 GOFUMPT = $(GOBIN)/gofumpt
@@ -30,7 +30,7 @@ default: help
 
 fmt: $(GOFUMPT) $(GOIMPORTS) ## Format source files.
 	@echo "formatting via gofumpt and goimports-reviser"
-	@$(foreach file,$(GO_FILES),(echo "fmt $(file)" && $(GOFUMPT) -e -w $(file) && $(GOIMPORTS) -project-name github.com/stegoer/server -file-path $(file)) &&) true
+	@$(foreach file,$(GO_FILES),(echo "fmt $(file)" && $(GOFUMPT) -e -w $(file) && $(GOIMPORTS) -project-name github.com/kucera-lukas/micro-backends -file-path $(file)) &&) true
 
 lint: $(GOLANGCI_LINT)  ## Lint source files.
 	@echo "linting via golangci-lint"
@@ -44,10 +44,11 @@ test:  ## Run module tests.
 
 gen-backend:  ## Generate files for backend_service.
 	@echo "generating gRPC files for backend_service"
-	@cd backend_service/proto && protoc --go_out=. --go-grpc_out=. backend.proto
+	@cd backend_service/proto && protoc backend.proto --go_out=. --go-grpc_out=.
 
 gen-mongo:  ## Generate files for mongo_service.
 	@echo "generating gRPC files for mongo_service"
+	@echo $(PATH)
 	@cd mongo_service/proto && protoc mongo.proto --go_out=. --go-grpc_out=.
 
 gen-postgres:  ## Generate files for postgres_service.
