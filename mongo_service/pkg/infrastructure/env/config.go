@@ -19,6 +19,7 @@ type Config struct {
 	MongoDBURI      string      `mapstructure:"MONGODB_URI"`
 	MongoDBUsername string      `mapstructure:"MONGODB_USERNAME"`
 	MongoDBPassword string      `mapstructure:"MONGODB_PASSWORD"`
+	RabbitMQURI     string      `mapstructure:"RABBITMQ_URI"`
 }
 
 const (
@@ -104,6 +105,7 @@ func getEnvDefaultKeys() []string {
 		"MONGODB_URI",
 		"MONGODB_USERNAME",
 		"MONGODB_PASSWORD",
+		"RABBITMQ_URI",
 	}
 }
 

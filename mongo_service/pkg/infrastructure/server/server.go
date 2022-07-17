@@ -26,48 +26,48 @@ const (
 )
 
 type Server struct {
-	proto.UnimplementedMessageServiceServer
+	pbmongo.UnimplementedMessageServiceServer
 
 	controller controller.Controller
 }
 
 func (s *Server) NewMessage(
 	ctx context.Context,
-	req *proto.NewMessageRequest,
-) (*proto.NewMessageResponse, error) {
+	req *pbmongo.NewMessageRequest,
+) (*pbmongo.NewMessageResponse, error) {
 	id, err := s.controller.Message.Create(ctx, req.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	return &proto.NewMessageResponse{Id: id.Hex()}, nil
+	return &pbmongo.NewMessageResponse{Id: id.Hex()}, nil
 }
 
 func (s *Server) MessageCount(
 	ctx context.Context,
-	req *proto.MessageCountRequest,
-) (*proto.MessageCountResponse, error) {
+	req *pbmongo.MessageCountRequest,
+) (*pbmongo.MessageCountResponse, error) {
 	count, err := s.controller.Message.Count(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &proto.MessageCountResponse{Count: count}, nil
+	return &pbmongo.MessageCountResponse{Count: count}, nil
 }
 
 func (s *Server) GetMessages(
 	ctx context.Context,
-	req *proto.GetMessagesRequest,
-) (*proto.GetMessagesResponse, error) {
+	req *pbmongo.GetMessagesRequest,
+) (*pbmongo.GetMessagesResponse, error) {
 	messageList, err := s.controller.Message.List(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var messages []*proto.GetMessageResponse
+	var messages []*pbmongo.GetMessageResponse
 
 	for _, msg := range messageList {
-		messages = append(messages, &proto.GetMessageResponse{
+		messages = append(messages, &pbmongo.GetMessageResponse{
 			Id:       msg.ID.String(),
 			Data:     msg.Data,
 			Created:  timestamppb.New(msg.Created),
@@ -75,7 +75,7 @@ func (s *Server) GetMessages(
 		})
 	}
 
-	return &proto.GetMessagesResponse{Messages: messages}, nil
+	return &pbmongo.GetMessagesResponse{Messages: messages}, nil
 }
 
 // Run runs the server with the given env.Config configuration.
@@ -88,13 +88,17 @@ func Run(config *env.Config) {
 	}
 
 	srv := grpc.NewServer()
-	proto.RegisterMessageServiceServer(srv, &Server{controller: ctrl})
+	pbmongo.RegisterMessageServiceServer(srv, &Server{controller: ctrl})
 	reflection.Register(srv)
 
 	address := fmt.Sprintf("0.0.0.0:%d", config.Port)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Printf("failed to listen to the address %s: %v", address, err)
+		log.Printf(
+			"failed to listen to the address %s: %v",
+			address,
+			err,
+		)
 	}
 
 	// Run our server in a goroutine so that it doesn't block.

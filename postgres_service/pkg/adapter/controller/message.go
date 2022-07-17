@@ -9,6 +9,6 @@ import (
 // Message Controller interface.
 type Message interface {
 	Create(ctx context.Context, data string) (uint32, error)
-	Count(ctx context.Context) (uint32, error)
+	Count(ctx context.Context) (int64, error)
 	List(ctx context.Context) ([]model.Message, error)
 }

@@ -1,0 +1,77 @@
+enum MessageProvider {
+    MONGO
+    POSTGRES
+}
+
+type Message {
+    id: String!
+    data: String!
+    provider: MessageProvider!
+}
+
+# Query
+
+type MessagePayload {
+    message: Message!
+    provider: MessageProvider!
+}
+
+type MessagesPayload {
+    messages: [Message!]!
+    provider: MessageProvider!
+}
+
+type MessageCountPayload {
+    count: Int!
+    provider: MessageProvider!
+}
+
+type GlobalMessagesPayload {
+    messages: [Message!]!
+}
+
+type GlobalMessageCountPayload {
+    count: Int!
+}
+
+extend type Query {
+    message(id: String!, provider: MessageProvider!): MessagePayload!
+    messages(provider: MessageProvider!): MessagesPayload!
+    messageCount(provider: MessageProvider!): MessageCountPayload!
+    globalMessages: GlobalMessagesPayload!
+    globalMessageCount: GlobalMessageCountPayload!
+}
+
+# Mutation
+
+input NewMessageInput {
+    provider: MessageProvider!
+    data: String!
+}
+
+input NewGlobalMessageInput {
+    data: String!
+}
+
+type NewMessagePayload {
+    message: Message!
+}
+
+type NewGlobalMessagePayload {
+    status: String!
+}
+
+extend type Mutation {
+    newMessage(input: NewMessageInput!): NewMessagePayload!
+    newGlobalMessage(input: NewGlobalMessageInput!): NewGlobalMessagePayload!
+}
+
+# Subscription
+
+type MessageCreatedPayload {
+    message: Message!
+}
+
+extend type Subscription {
+    messageCreated: MessageCreatedPayload!
+}

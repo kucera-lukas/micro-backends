@@ -35,8 +35,8 @@ func (r *imageRepository) Create(
 	return messageID, nil
 }
 
-func (r *imageRepository) Count(ctx context.Context) (uint32, error) {
-	var count uint32
+func (r *imageRepository) Count(ctx context.Context) (int64, error) {
+	var count int64
 
 	row := r.client.QueryRow(ctx, "SELECT count(*) FROM messages;")
 	err := row.Scan(&count)

@@ -17,6 +17,7 @@ type Config struct {
 	Debug       bool        `mapstructure:"DEBUG"`
 	Port        int         `mapstructure:"PORT"`
 	DatabaseURL string      `mapstructure:"DATABASE_URL"`
+	RabbitMQURI string      `mapstructure:"RABBITMQ_URI"`
 }
 
 const (
@@ -97,7 +98,7 @@ func setDefault() {
 }
 
 func getEnvDefaultKeys() []string {
-	return []string{"PORT", "DATABASE_URL"}
+	return []string{"PORT", "DATABASE_URL", "RABBITMQ_URI"}
 }
 
 func setEnvDefault(key string) {

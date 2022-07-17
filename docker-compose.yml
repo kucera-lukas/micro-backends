@@ -12,6 +12,7 @@ services:
     depends_on:
       - mongo_service
       - postgres_service
+      - rabbitmq
 
   mongo_service:
     build:
@@ -24,6 +25,8 @@ services:
     networks:
       - micro_backends
     depends_on:
+      rabbitmq:
+        condition: service_healthy
       mongodb:
         condition: service_healthy
 
@@ -38,11 +41,30 @@ services:
     networks:
       - micro_backends
     depends_on:
+      rabbitmq:
+        condition: service_healthy
       postgres:
         condition: service_healthy
 
+  rabbitmq:
+    image: rabbitmq:latest
+    restart: always
+    ports:
+      - "5673:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - micro_backends
+
   mongodb:
-    container_name: mongodb
     image: bitnami/mongodb:latest
     restart: always
     ports:
@@ -64,10 +86,8 @@ services:
       - micro_backends
 
   postgres:
-    container_name: postgres
     image: postgres:latest
     restart: always
-    hostname: postgres
     ports:
       - "5433:5432"
     environment:
@@ -86,6 +106,7 @@ services:
       - micro_backends
 
 volumes:
+  rabbitmq:
   mongodb:
   postgres:
 

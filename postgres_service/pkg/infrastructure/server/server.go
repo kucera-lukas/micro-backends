@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -17,6 +18,7 @@ import (
 	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/adapter/repository"
 	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/infrastructure/database"
 	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/infrastructure/env"
+	"github.com/kucera-lukas/micro-backends/postgres-service/pkg/infrastructure/rabbitmq"
 	"github.com/kucera-lukas/micro-backends/postgres-service/proto"
 )
 
@@ -26,48 +28,48 @@ const (
 )
 
 type Server struct {
-	proto.UnimplementedMessageServiceServer
+	pbpostgres.UnimplementedMessageServiceServer
 
 	controller controller.Controller
 }
 
 func (s *Server) NewMessage(
 	ctx context.Context,
-	req *proto.NewMessageRequest,
-) (*proto.NewMessageResponse, error) {
+	req *pbpostgres.NewMessageRequest,
+) (*pbpostgres.NewMessageResponse, error) {
 	id, err := s.controller.Message.Create(ctx, req.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	return &proto.NewMessageResponse{Id: id}, nil
+	return &pbpostgres.NewMessageResponse{Id: id}, nil
 }
 
 func (s *Server) MessageCount(
 	ctx context.Context,
-	req *proto.MessageCountRequest,
-) (*proto.MessageCountResponse, error) {
+	req *pbpostgres.MessageCountRequest,
+) (*pbpostgres.MessageCountResponse, error) {
 	count, err := s.controller.Message.Count(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &proto.MessageCountResponse{Count: count}, nil
+	return &pbpostgres.MessageCountResponse{Count: count}, nil
 }
 
 func (s *Server) GetMessages(
 	ctx context.Context,
-	req *proto.GetMessagesRequest,
-) (*proto.GetMessagesResponse, error) {
+	req *pbpostgres.GetMessagesRequest,
+) (*pbpostgres.GetMessagesResponse, error) {
 	messageList, err := s.controller.Message.List(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var messages []*proto.GetMessageResponse
+	var messages []*pbpostgres.GetMessageResponse
 
 	for _, msg := range messageList {
-		messages = append(messages, &proto.GetMessageResponse{
+		messages = append(messages, &pbpostgres.GetMessageResponse{
 			Id:       msg.Id,
 			Data:     msg.Data,
 			Created:  timestamppb.New(msg.Created),
@@ -75,11 +77,19 @@ func (s *Server) GetMessages(
 		})
 	}
 
-	return &proto.GetMessagesResponse{Messages: messages}, nil
+	return &pbpostgres.GetMessagesResponse{Messages: messages}, nil
 }
 
 // Run runs the server with the given env.Config configuration.
 func Run(config *env.Config) {
+	rabbitmqClient := rabbitmq.MustNew(config)
+	err := rabbitmqClient.Consume(
+		func(delivery amqp091.Delivery) { log.Printf("delivery: %+v\n", delivery) },
+	)
+	if err != nil {
+		log.Panicf("failed to consume deliveries: %v\n", err)
+	}
+
 	databaseClient := database.MustNew(config)
 	defer databaseClient.Close()
 
@@ -88,13 +98,17 @@ func Run(config *env.Config) {
 	}
 
 	srv := grpc.NewServer()
-	proto.RegisterMessageServiceServer(srv, &Server{controller: ctrl})
+	pbpostgres.RegisterMessageServiceServer(srv, &Server{controller: ctrl})
 	reflection.Register(srv)
 
 	address := fmt.Sprintf("0.0.0.0:%d", config.Port)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Printf("failed to listen to the address %s: %v", address, err)
+		log.Printf(
+			"failed to listen to the address %s: %v",
+			address,
+			err,
+		)
 	}
 
 	// Run our server in a goroutine so that it doesn't block.

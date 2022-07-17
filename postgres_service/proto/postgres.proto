@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package proto;
-option go_package = "./;proto";
+package pbpostgres;
+option go_package = "./;pbpostgres";
 
 import "google/protobuf/timestamp.proto";
 
@@ -16,7 +16,7 @@ message NewMessageResponse{
 message MessageCountRequest{}
 
 message MessageCountResponse{
-    uint32 count = 1;
+    int64 count = 1;
 }
 
 message GetMessagesRequest{}

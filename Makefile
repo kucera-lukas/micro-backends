@@ -2,9 +2,13 @@ GOBIN ?= $(shell pwd)/bin
 PATH := $(GOBIN):$(PATH)
 export
 
+GQLGEN = $(GOBIN)/gqlgen
 GOFUMPT = $(GOBIN)/gofumpt
 GOLANGCI_LINT = $(GOBIN)/golangci-lint
 GOIMPORTS = $(GOBIN)/goimports-reviser
+
+$(GQLGEN):
+	cd tools && go install github.com/99designs/gqlgen
 
 $(GOFUMPT):
 	cd tools && go install mvdan.cc/gofumpt
@@ -17,14 +21,14 @@ $(GOLANGCI_LINT):
 
 
 # Directories containing independent Go modules.
-MODULE_DIRS = ./backend_service ./mongo_service ./postgres_service
+MODULE_DIRS = ./backend_service ./mongo_service ./postgres_service ./tools
 
 # Many Go tools take file globs or directories as arguments instead of packages.
 GO_FILES := $(shell \
 	find . '(' -path '*/.*' -o -path './vendor' ')' -prune \
 	-o -name '*.go' -print | cut -b3-)
 
-.PHONY: gen fmt lint tidy test dev clean help
+.PHONY: fmt lint tidy test gen-backend gen-mongo gen-postgres gen dev-build clean help
 
 default: help
 
@@ -42,13 +46,15 @@ tidy:  ## Tidy module dependencies.
 test:  ## Run module tests.
 	@$(foreach dir,$(MODULE_DIRS),(cd $(dir) && echo "test $(dir)" && go test -race ./...) &&) true
 
-gen-backend:  ## Generate files for backend_service.
+gen-backend: $(GQLGEN) ## Generate files for backend_service.
+	@echo "generating GraphQL files for backend_service"
+	@cd backend_service && $(GQLGEN)
 	@echo "generating gRPC files for backend_service"
-	@cd backend_service/proto && protoc backend.proto --go_out=. --go-grpc_out=.
+	@cd backend_service/proto/mongo && protoc mongo.proto --go_out=. --go-grpc_out=.
+	@cd backend_service/proto/postgres && protoc postgres.proto --go_out=. --go-grpc_out=.
 
 gen-mongo:  ## Generate files for mongo_service.
 	@echo "generating gRPC files for mongo_service"
-	@echo $(PATH)
 	@cd mongo_service/proto && protoc mongo.proto --go_out=. --go-grpc_out=.
 
 gen-postgres:  ## Generate files for postgres_service.

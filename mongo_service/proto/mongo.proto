@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package proto;
-option go_package = "./;proto";
+package pbmongo;
+option go_package = "./;pbmongo";
 
 import "google/protobuf/timestamp.proto";
 
