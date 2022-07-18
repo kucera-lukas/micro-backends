@@ -32,7 +32,7 @@ func Run(config *env.Config) {
 func create(config *env.Config) *http.Server {
 	mongoClient := grpc.MustNewMongoClient(config)
 	postgresClient := grpc.MustNewPostgresClient(config)
-	rabbitmqClient := rabbitmq.MustNew(config)
+	rabbitmqClient := rabbitmq.MustNew(config.RabbitMQURI)
 
 	ctrl := controller.Controller{
 		Message: repository.NewMessageRepository(

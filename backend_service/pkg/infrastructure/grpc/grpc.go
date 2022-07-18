@@ -1,6 +1,8 @@
 package grpc
 
 import (
+	"fmt"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -8,7 +10,11 @@ import (
 func dial(target string) (*grpc.ClientConn, error) {
 	conn, err := grpc.Dial(target, getOpts()...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(
+			"grpc: failed to dial target %q: %w",
+			target,
+			err,
+		)
 	}
 
 	return conn, nil

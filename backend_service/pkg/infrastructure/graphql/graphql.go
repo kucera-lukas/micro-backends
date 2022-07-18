@@ -20,10 +20,10 @@ const (
 // NewServer generates a new handler.Server.
 func NewServer(
 	config *env.Config,
-	amqpClient *rabbitmq.Client,
+	rabbitmqClient *rabbitmq.Client,
 	controller controller.Controller,
 ) *handler.Server {
-	srv := handler.New(resolver.NewSchema(config, amqpClient, controller))
+	srv := handler.New(resolver.NewSchema(config, rabbitmqClient, controller))
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})

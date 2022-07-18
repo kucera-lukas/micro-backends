@@ -15,19 +15,19 @@ import (
 
 // Resolver is a context struct.
 type Resolver struct {
-	config     *env.Config
-	amqpClient *rabbitmq.Client
-	controller controller.Controller
+	config         *env.Config
+	rabbitmqClient *rabbitmq.Client
+	controller     controller.Controller
 }
 
 // NewSchema creates a new graphql.ExecutableSchema.
 func NewSchema( //nolint:ireturn
 	config *env.Config,
-	amqpClient *rabbitmq.Client,
+	rabbitmqClient *rabbitmq.Client,
 	controller controller.Controller,
 ) graphql.ExecutableSchema {
 	return gqlgen.NewExecutableSchema(gqlgen.Config{
-		Resolvers:  getResolver(config, amqpClient, controller),
+		Resolvers:  getResolver(config, rabbitmqClient, controller),
 		Directives: getDirective(),
 		Complexity: getComplexity(),
 	})
@@ -35,13 +35,13 @@ func NewSchema( //nolint:ireturn
 
 func getResolver(
 	config *env.Config,
-	amqpClient *rabbitmq.Client,
+	rabbitmqClient *rabbitmq.Client,
 	controller controller.Controller,
 ) *Resolver {
 	return &Resolver{
-		config:     config,
-		amqpClient: amqpClient,
-		controller: controller,
+		config:         config,
+		rabbitmqClient: rabbitmqClient,
+		controller:     controller,
 	}
 }
 

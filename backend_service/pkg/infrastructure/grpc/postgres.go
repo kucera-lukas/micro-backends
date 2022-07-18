@@ -10,7 +10,7 @@ import (
 func MustNewPostgresClient(config *env.Config) pbpostgres.MessageServiceClient {
 	client, err := NewPostgresClient(config)
 	if err != nil {
-		log.Panicf("failed to create postgres client: %v\n", err)
+		log.Panicf("grpc: failed to create postgres client: %v\n", err)
 	}
 
 	return client

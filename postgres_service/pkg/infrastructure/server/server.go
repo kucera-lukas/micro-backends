@@ -9,7 +9,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -37,12 +36,17 @@ func (s *Server) NewMessage(
 	ctx context.Context,
 	req *pbpostgres.NewMessageRequest,
 ) (*pbpostgres.NewMessageResponse, error) {
-	id, err := s.controller.Message.Create(ctx, req.Data)
+	message, err := s.controller.Message.Create(ctx, req.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pbpostgres.NewMessageResponse{Id: id}, nil
+	return &pbpostgres.NewMessageResponse{
+		Id:       message.Id,
+		Data:     message.Data,
+		Created:  timestamppb.New(message.Created),
+		Modified: timestamppb.New(message.Modified),
+	}, nil
 }
 
 func (s *Server) MessageCount(
@@ -82,19 +86,16 @@ func (s *Server) GetMessages(
 
 // Run runs the server with the given env.Config configuration.
 func Run(config *env.Config) {
-	rabbitmqClient := rabbitmq.MustNew(config)
-	err := rabbitmqClient.Consume(
-		func(delivery amqp091.Delivery) { log.Printf("delivery: %+v\n", delivery) },
-	)
-	if err != nil {
-		log.Panicf("failed to consume deliveries: %v\n", err)
-	}
-
-	databaseClient := database.MustNew(config)
-	defer databaseClient.Close()
+	pgxPool := database.MustNew(config)
+	defer pgxPool.Close()
+	rabbitmqClient := rabbitmq.MustNew(config.RabbitMQURI)
+	defer rabbitmqClient.Close()
 
 	ctrl := controller.Controller{
-		Message: repository.NewMessageRepository(databaseClient),
+		Message: repository.NewMessageRepository(pgxPool, rabbitmqClient),
+	}
+	if err := ctrl.Setup(rabbitmqClient); err != nil {
+		log.Panicf("failed to setup controller: %v\n", err)
 	}
 
 	srv := grpc.NewServer()
@@ -104,8 +105,8 @@ func Run(config *env.Config) {
 	address := fmt.Sprintf("0.0.0.0:%d", config.Port)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Printf(
-			"failed to listen to the address %s: %v",
+		log.Panicf(
+			"failed to listen to the address %s: %v\n",
 			address,
 			err,
 		)

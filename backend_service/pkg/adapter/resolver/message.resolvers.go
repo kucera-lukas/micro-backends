@@ -7,7 +7,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/rabbitmq/amqp091-go"
+
 	"github.com/kucera-lukas/micro-backends/backend-service/gqlgen"
+	"github.com/kucera-lukas/micro-backends/backend-service/pkg/infrastructure/rabbitmq"
 )
 
 func (r *mutationResolver) NewMessage(ctx context.Context, input gqlgen.NewMessageInput) (*gqlgen.NewMessagePayload, error) {
@@ -16,7 +19,10 @@ func (r *mutationResolver) NewMessage(ctx context.Context, input gqlgen.NewMessa
 		return nil, err
 	}
 
-	return &gqlgen.NewMessagePayload{Message: message}, nil
+	return &gqlgen.NewMessagePayload{
+		Message:  message,
+		Provider: input.Provider,
+	}, nil
 }
 
 func (r *mutationResolver) NewGlobalMessage(ctx context.Context, input gqlgen.NewGlobalMessageInput) (*gqlgen.NewGlobalMessagePayload, error) {
@@ -33,7 +39,15 @@ func (r *queryResolver) Message(ctx context.Context, id string, provider gqlgen.
 }
 
 func (r *queryResolver) Messages(ctx context.Context, provider gqlgen.MessageProvider) (*gqlgen.MessagesPayload, error) {
-	panic(fmt.Errorf("not implemented"))
+	messages, err := r.controller.Message.List(ctx, provider)
+	if err != nil {
+		return nil, err
+	}
+
+	return &gqlgen.MessagesPayload{
+		Messages: messages,
+		Provider: provider,
+	}, err
 }
 
 func (r *queryResolver) MessageCount(ctx context.Context, provider gqlgen.MessageProvider) (*gqlgen.MessageCountPayload, error) {
@@ -42,7 +56,10 @@ func (r *queryResolver) MessageCount(ctx context.Context, provider gqlgen.Messag
 		return nil, err
 	}
 
-	return &gqlgen.MessageCountPayload{Count: int(count)}, nil
+	return &gqlgen.MessageCountPayload{
+		Count:    int(count),
+		Provider: provider,
+	}, nil
 }
 
 func (r *queryResolver) GlobalMessages(ctx context.Context) (*gqlgen.GlobalMessagesPayload, error) {
@@ -59,5 +76,16 @@ func (r *queryResolver) GlobalMessageCount(ctx context.Context) (*gqlgen.GlobalM
 }
 
 func (r *subscriptionResolver) MessageCreated(ctx context.Context) (<-chan *gqlgen.MessageCreatedPayload, error) {
-	panic(fmt.Errorf("not implemented"))
+	messages := make(chan *gqlgen.MessageCreatedPayload, 1)
+
+	if err := r.rabbitmqClient.Consumer.Consume(
+		func(delivery amqp091.Delivery) {
+			r.controller.Message.Consume(ctx, delivery, messages)
+		},
+		rabbitmq.CreatedMessageRoutingKey,
+	); err != nil {
+		return nil, fmt.Errorf("error consuming messages: %w", err)
+	}
+
+	return messages, nil
 }

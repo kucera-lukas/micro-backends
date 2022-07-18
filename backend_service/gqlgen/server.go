@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -53,9 +54,10 @@ type ComplexityRoot struct {
 	}
 
 	Message struct {
+		Created  func(childComplexity int) int
 		Data     func(childComplexity int) int
 		ID       func(childComplexity int) int
-		Provider func(childComplexity int) int
+		Modified func(childComplexity int) int
 	}
 
 	MessageCountPayload struct {
@@ -64,7 +66,8 @@ type ComplexityRoot struct {
 	}
 
 	MessageCreatedPayload struct {
-		Message func(childComplexity int) int
+		Message  func(childComplexity int) int
+		Provider func(childComplexity int) int
 	}
 
 	MessagePayload struct {
@@ -87,7 +90,8 @@ type ComplexityRoot struct {
 	}
 
 	NewMessagePayload struct {
-		Message func(childComplexity int) int
+		Message  func(childComplexity int) int
+		Provider func(childComplexity int) int
 	}
 
 	Query struct {
@@ -147,6 +151,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.GlobalMessagesPayload.Messages(childComplexity), true
 
+	case "Message.created":
+		if e.complexity.Message.Created == nil {
+			break
+		}
+
+		return e.complexity.Message.Created(childComplexity), true
+
 	case "Message.data":
 		if e.complexity.Message.Data == nil {
 			break
@@ -161,12 +172,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Message.ID(childComplexity), true
 
-	case "Message.provider":
-		if e.complexity.Message.Provider == nil {
+	case "Message.modified":
+		if e.complexity.Message.Modified == nil {
 			break
 		}
 
-		return e.complexity.Message.Provider(childComplexity), true
+		return e.complexity.Message.Modified(childComplexity), true
 
 	case "MessageCountPayload.count":
 		if e.complexity.MessageCountPayload.Count == nil {
@@ -188,6 +199,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MessageCreatedPayload.Message(childComplexity), true
+
+	case "MessageCreatedPayload.provider":
+		if e.complexity.MessageCreatedPayload.Provider == nil {
+			break
+		}
+
+		return e.complexity.MessageCreatedPayload.Provider(childComplexity), true
 
 	case "MessagePayload.message":
 		if e.complexity.MessagePayload.Message == nil {
@@ -254,6 +272,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.NewMessagePayload.Message(childComplexity), true
+
+	case "NewMessagePayload.provider":
+		if e.complexity.NewMessagePayload.Provider == nil {
+			break
+		}
+
+		return e.complexity.NewMessagePayload.Provider(childComplexity), true
 
 	case "Query.globalMessageCount":
 		if e.complexity.Query.GlobalMessageCount == nil {
@@ -401,7 +426,8 @@ var sources = []*ast.Source{
 type Message {
     id: String!
     data: String!
-    provider: MessageProvider!
+    created: Time!
+    modified: Time!
 }
 
 # Query
@@ -450,6 +476,7 @@ input NewGlobalMessageInput {
 
 type NewMessagePayload {
     message: Message!
+    provider: MessageProvider!
 }
 
 type NewGlobalMessagePayload {
@@ -465,12 +492,12 @@ extend type Mutation {
 
 type MessageCreatedPayload {
     message: Message!
+    provider: MessageProvider!
 }
 
 extend type Subscription {
     messageCreated: MessageCreatedPayload!
 }
-
 `, BuiltIn: false},
 	{Name: "graphql/schema.graphqls", Input: `scalar Time
 
@@ -714,8 +741,10 @@ func (ec *executionContext) fieldContext_GlobalMessagesPayload_messages(ctx cont
 				return ec.fieldContext_Message_id(ctx, field)
 			case "data":
 				return ec.fieldContext_Message_data(ctx, field)
-			case "provider":
-				return ec.fieldContext_Message_provider(ctx, field)
+			case "created":
+				return ec.fieldContext_Message_created(ctx, field)
+			case "modified":
+				return ec.fieldContext_Message_modified(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
 		},
@@ -811,8 +840,8 @@ func (ec *executionContext) fieldContext_Message_data(ctx context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Message_provider(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Message_provider(ctx, field)
+func (ec *executionContext) _Message_created(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Message_created(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -825,7 +854,7 @@ func (ec *executionContext) _Message_provider(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Provider, nil
+		return obj.Created, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -837,19 +866,63 @@ func (ec *executionContext) _Message_provider(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(MessageProvider)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNMessageProvider2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProvider(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Message_provider(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Message_created(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Message",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type MessageProvider does not have child fields")
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Message_modified(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Message_modified(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Modified, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Message_modified(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Message",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -986,10 +1059,56 @@ func (ec *executionContext) fieldContext_MessageCreatedPayload_message(ctx conte
 				return ec.fieldContext_Message_id(ctx, field)
 			case "data":
 				return ec.fieldContext_Message_data(ctx, field)
-			case "provider":
-				return ec.fieldContext_Message_provider(ctx, field)
+			case "created":
+				return ec.fieldContext_Message_created(ctx, field)
+			case "modified":
+				return ec.fieldContext_Message_modified(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MessageCreatedPayload_provider(ctx context.Context, field graphql.CollectedField, obj *MessageCreatedPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageCreatedPayload_provider(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Provider, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(MessageProvider)
+	fc.Result = res
+	return ec.marshalNMessageProvider2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProvider(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MessageCreatedPayload_provider(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MessageCreatedPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type MessageProvider does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1038,8 +1157,10 @@ func (ec *executionContext) fieldContext_MessagePayload_message(ctx context.Cont
 				return ec.fieldContext_Message_id(ctx, field)
 			case "data":
 				return ec.fieldContext_Message_data(ctx, field)
-			case "provider":
-				return ec.fieldContext_Message_provider(ctx, field)
+			case "created":
+				return ec.fieldContext_Message_created(ctx, field)
+			case "modified":
+				return ec.fieldContext_Message_modified(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
 		},
@@ -1134,8 +1255,10 @@ func (ec *executionContext) fieldContext_MessagesPayload_messages(ctx context.Co
 				return ec.fieldContext_Message_id(ctx, field)
 			case "data":
 				return ec.fieldContext_Message_data(ctx, field)
-			case "provider":
-				return ec.fieldContext_Message_provider(ctx, field)
+			case "created":
+				return ec.fieldContext_Message_created(ctx, field)
+			case "modified":
+				return ec.fieldContext_Message_modified(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
 		},
@@ -1228,6 +1351,8 @@ func (ec *executionContext) fieldContext_Mutation_newMessage(ctx context.Context
 			switch field.Name {
 			case "message":
 				return ec.fieldContext_NewMessagePayload_message(ctx, field)
+			case "provider":
+				return ec.fieldContext_NewMessagePayload_provider(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type NewMessagePayload", field.Name)
 		},
@@ -1392,10 +1517,56 @@ func (ec *executionContext) fieldContext_NewMessagePayload_message(ctx context.C
 				return ec.fieldContext_Message_id(ctx, field)
 			case "data":
 				return ec.fieldContext_Message_data(ctx, field)
-			case "provider":
-				return ec.fieldContext_Message_provider(ctx, field)
+			case "created":
+				return ec.fieldContext_Message_created(ctx, field)
+			case "modified":
+				return ec.fieldContext_Message_modified(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _NewMessagePayload_provider(ctx context.Context, field graphql.CollectedField, obj *NewMessagePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_NewMessagePayload_provider(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Provider, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(MessageProvider)
+	fc.Result = res
+	return ec.marshalNMessageProvider2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProvider(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_NewMessagePayload_provider(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "NewMessagePayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type MessageProvider does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1860,6 +2031,8 @@ func (ec *executionContext) fieldContext_Subscription_messageCreated(ctx context
 			switch field.Name {
 			case "message":
 				return ec.fieldContext_MessageCreatedPayload_message(ctx, field)
+			case "provider":
+				return ec.fieldContext_MessageCreatedPayload_provider(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type MessageCreatedPayload", field.Name)
 		},
@@ -3794,9 +3967,19 @@ func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "provider":
+		case "created":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Message_provider(ctx, field, obj)
+				return ec._Message_created(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "modified":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Message_modified(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -3869,6 +4052,16 @@ func (ec *executionContext) _MessageCreatedPayload(ctx context.Context, sel ast.
 		case "message":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._MessageCreatedPayload_message(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "provider":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._MessageCreatedPayload_provider(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -4063,6 +4256,16 @@ func (ec *executionContext) _NewMessagePayload(ctx context.Context, sel ast.Sele
 		case "message":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._NewMessagePayload_message(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "provider":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._NewMessagePayload_provider(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -4906,6 +5109,21 @@ func (ec *executionContext) unmarshalNString2string(ctx context.Context, v inter
 
 func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	res, err := graphql.UnmarshalTime(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	res := graphql.MarshalTime(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

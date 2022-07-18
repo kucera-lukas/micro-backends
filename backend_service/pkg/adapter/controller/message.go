@@ -3,6 +3,8 @@ package controller
 import (
 	"context"
 
+	"github.com/rabbitmq/amqp091-go"
+
 	"github.com/kucera-lukas/micro-backends/backend-service/gqlgen"
 )
 
@@ -36,4 +38,9 @@ type Message interface {
 		ctx context.Context,
 		data string,
 	) (string, error)
+	Consume(
+		ctx context.Context,
+		delivery amqp091.Delivery,
+		messages chan *gqlgen.MessageCreatedPayload,
+	)
 }

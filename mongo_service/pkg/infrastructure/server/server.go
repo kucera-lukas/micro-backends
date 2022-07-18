@@ -17,6 +17,7 @@ import (
 	"github.com/kucera-lukas/micro-backends/mongo-service/pkg/adapter/repository"
 	"github.com/kucera-lukas/micro-backends/mongo-service/pkg/infrastructure/env"
 	"github.com/kucera-lukas/micro-backends/mongo-service/pkg/infrastructure/mongo"
+	"github.com/kucera-lukas/micro-backends/mongo-service/pkg/infrastructure/rabbitmq"
 	"github.com/kucera-lukas/micro-backends/mongo-service/proto"
 )
 
@@ -35,12 +36,17 @@ func (s *Server) NewMessage(
 	ctx context.Context,
 	req *pbmongo.NewMessageRequest,
 ) (*pbmongo.NewMessageResponse, error) {
-	id, err := s.controller.Message.Create(ctx, req.Data)
+	message, err := s.controller.Message.Create(ctx, req.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pbmongo.NewMessageResponse{Id: id.Hex()}, nil
+	return &pbmongo.NewMessageResponse{
+		Id:       message.ID.Hex(),
+		Data:     message.Data,
+		Created:  timestamppb.New(message.Created),
+		Modified: timestamppb.New(message.Modified),
+	}, nil
 }
 
 func (s *Server) MessageCount(
@@ -68,7 +74,7 @@ func (s *Server) GetMessages(
 
 	for _, msg := range messageList {
 		messages = append(messages, &pbmongo.GetMessageResponse{
-			Id:       msg.ID.String(),
+			Id:       msg.ID.Hex(),
 			Data:     msg.Data,
 			Created:  timestamppb.New(msg.Created),
 			Modified: timestamppb.New(msg.Modified),
@@ -80,11 +86,16 @@ func (s *Server) GetMessages(
 
 // Run runs the server with the given env.Config configuration.
 func Run(config *env.Config) {
+	rabbitmqClient := rabbitmq.MustNew(config.RabbitMQURI)
+	defer rabbitmqClient.Close()
 	mongoClient := mongo.MustNew(config)
 	defer mongo.Disconnect(mongoClient)
 
 	ctrl := controller.Controller{
-		Message: repository.NewMessageRepository(mongoClient),
+		Message: repository.NewMessageRepository(mongoClient, rabbitmqClient),
+	}
+	if err := ctrl.Setup(rabbitmqClient); err != nil {
+		log.Panicf("failed to setup controller: %v\n", err)
 	}
 
 	srv := grpc.NewServer()

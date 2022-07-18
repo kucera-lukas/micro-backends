@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 )
 
 type GlobalMessageCountPayload struct {
@@ -17,9 +18,10 @@ type GlobalMessagesPayload struct {
 }
 
 type Message struct {
-	ID       string          `json:"id"`
-	Data     string          `json:"data"`
-	Provider MessageProvider `json:"provider"`
+	ID       string    `json:"id"`
+	Data     string    `json:"data"`
+	Created  time.Time `json:"created"`
+	Modified time.Time `json:"modified"`
 }
 
 type MessageCountPayload struct {
@@ -28,7 +30,8 @@ type MessageCountPayload struct {
 }
 
 type MessageCreatedPayload struct {
-	Message *Message `json:"message"`
+	Message  *Message        `json:"message"`
+	Provider MessageProvider `json:"provider"`
 }
 
 type MessagePayload struct {
@@ -55,7 +58,8 @@ type NewMessageInput struct {
 }
 
 type NewMessagePayload struct {
-	Message *Message `json:"message"`
+	Message  *Message        `json:"message"`
+	Provider MessageProvider `json:"provider"`
 }
 
 type MessageProvider string

@@ -11,6 +11,9 @@ message NewMessageRequest{
 
 message NewMessageResponse{
     string id = 1;
+    string data = 2;
+    google.protobuf.Timestamp created = 3;
+    google.protobuf.Timestamp modified = 4;
 }
 
 message MessageCountRequest{}
