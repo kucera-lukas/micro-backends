@@ -24,7 +24,7 @@ func NewPublisher(conn *amqp091.Connection) (*Publisher, error) {
 }
 
 // Publish a message to the AMQP exchange.
-func (p *Publisher) Publish(body string, routingKey string) error {
+func (p *Publisher) Publish(body string, headers amqp091.Table) error {
 	channel, err := p.conn.Channel()
 	if err != nil {
 		return fmt.Errorf("publish: failed to open channel: %w", err)
@@ -34,12 +34,13 @@ func (p *Publisher) Publish(body string, routingKey string) error {
 
 	if err := channel.Publish(
 		ExchangeName,
-		routingKey,
-		false,
-		false,
+		"",    // 'headers' exchange ignores the routing key
+		false, // mandatory
+		false, // immediate
 		amqp091.Publishing{
 			ContentType: "application/json",
 			Body:        []byte(body),
+			Headers:     headers,
 		},
 	); err != nil {
 		return fmt.Errorf("publish: %w", err)

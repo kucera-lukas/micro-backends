@@ -19,53 +19,34 @@ type MessagePayload {
 
 type MessagesPayload {
     messages: [Message!]!
-    provider: MessageProvider!
+    providers: [MessageProvider!]!
 }
 
 type MessageCountPayload {
     count: Int!
-    provider: MessageProvider!
-}
-
-type GlobalMessagesPayload {
-    messages: [Message!]!
-}
-
-type GlobalMessageCountPayload {
-    count: Int!
+    providers: [MessageProvider!]!
 }
 
 extend type Query {
     message(id: String!, provider: MessageProvider!): MessagePayload!
-    messages(provider: MessageProvider!): MessagesPayload!
-    messageCount(provider: MessageProvider!): MessageCountPayload!
-    globalMessages: GlobalMessagesPayload!
-    globalMessageCount: GlobalMessageCountPayload!
+    messages(providers: [MessageProvider!]!): MessagesPayload!
+    messageCount(providers: [MessageProvider!]!): MessageCountPayload!
 }
 
 # Mutation
 
 input NewMessageInput {
-    provider: MessageProvider!
-    data: String!
-}
-
-input NewGlobalMessageInput {
+    providers: [MessageProvider!]!
     data: String!
 }
 
 type NewMessagePayload {
-    message: Message!
-    provider: MessageProvider!
-}
-
-type NewGlobalMessagePayload {
     status: String!
+    providers: [MessageProvider!]!
 }
 
 extend type Mutation {
     newMessage(input: NewMessageInput!): NewMessagePayload!
-    newGlobalMessage(input: NewGlobalMessageInput!): NewGlobalMessagePayload!
 }
 
 # Subscription

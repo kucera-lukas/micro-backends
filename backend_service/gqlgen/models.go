@@ -9,14 +9,6 @@ import (
 	"time"
 )
 
-type GlobalMessageCountPayload struct {
-	Count int `json:"count"`
-}
-
-type GlobalMessagesPayload struct {
-	Messages []*Message `json:"messages"`
-}
-
 type Message struct {
 	ID       string    `json:"id"`
 	Data     string    `json:"data"`
@@ -25,8 +17,8 @@ type Message struct {
 }
 
 type MessageCountPayload struct {
-	Count    int             `json:"count"`
-	Provider MessageProvider `json:"provider"`
+	Count     int               `json:"count"`
+	Providers []MessageProvider `json:"providers"`
 }
 
 type MessageCreatedPayload struct {
@@ -40,26 +32,18 @@ type MessagePayload struct {
 }
 
 type MessagesPayload struct {
-	Messages []*Message      `json:"messages"`
-	Provider MessageProvider `json:"provider"`
-}
-
-type NewGlobalMessageInput struct {
-	Data string `json:"data"`
-}
-
-type NewGlobalMessagePayload struct {
-	Status string `json:"status"`
+	Messages  []*Message        `json:"messages"`
+	Providers []MessageProvider `json:"providers"`
 }
 
 type NewMessageInput struct {
-	Provider MessageProvider `json:"provider"`
-	Data     string          `json:"data"`
+	Providers []MessageProvider `json:"providers"`
+	Data      string            `json:"data"`
 }
 
 type NewMessagePayload struct {
-	Message  *Message        `json:"message"`
-	Provider MessageProvider `json:"provider"`
+	Status    string            `json:"status"`
+	Providers []MessageProvider `json:"providers"`
 }
 
 type MessageProvider string

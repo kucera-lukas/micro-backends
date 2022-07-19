@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	consumerIdentifier = "mongo_service"
+	ConsumerIdentifier = "mongo_service"
 )
 
 // Consumer for consuming AMQP events
@@ -30,24 +30,24 @@ func NewConsumer(conn *amqp091.Connection) (*Consumer, error) {
 // Consume consumes events from the AMQP exchange.
 func (c *Consumer) Consume(
 	callback func(delivery amqp091.Delivery),
-	topics ...string,
+	tables ...amqp091.Table,
 ) error {
 	channel, err := c.conn.Channel()
 	if err != nil {
 		return fmt.Errorf("consume: failed to open channel: %w", err)
 	}
 
-	queue, err := declareQueue(channel)
+	queue, err := declareQueue(channel, "")
 	if err != nil {
 		return fmt.Errorf("consume: failed to declare queue: %w", err)
 	}
 
-	for _, topic := range topics {
-		if err := bindQueue(channel, queue, topic); err != nil {
+	for _, table := range tables {
+		if err := bindQueue(channel, queue, ExchangeName, table); err != nil {
 			return fmt.Errorf(
-				"consume: failed to bind queue %q to the %q topic: %w",
+				"consume: failed to bind queue %q via %T: %w",
 				queue.Name,
-				topic,
+				table,
 				err,
 			)
 		}
@@ -55,7 +55,7 @@ func (c *Consumer) Consume(
 
 	deliveries, err := channel.Consume(
 		queue.Name,
-		consumerIdentifier,
+		ConsumerIdentifier,
 		false, // autoAck
 		false, // exclusive
 		false, // noLocal

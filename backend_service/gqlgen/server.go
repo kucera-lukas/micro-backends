@@ -45,14 +45,6 @@ type ResolverRoot interface {
 type DirectiveRoot struct{}
 
 type ComplexityRoot struct {
-	GlobalMessageCountPayload struct {
-		Count func(childComplexity int) int
-	}
-
-	GlobalMessagesPayload struct {
-		Messages func(childComplexity int) int
-	}
-
 	Message struct {
 		Created  func(childComplexity int) int
 		Data     func(childComplexity int) int
@@ -61,8 +53,8 @@ type ComplexityRoot struct {
 	}
 
 	MessageCountPayload struct {
-		Count    func(childComplexity int) int
-		Provider func(childComplexity int) int
+		Count     func(childComplexity int) int
+		Providers func(childComplexity int) int
 	}
 
 	MessageCreatedPayload struct {
@@ -76,30 +68,23 @@ type ComplexityRoot struct {
 	}
 
 	MessagesPayload struct {
-		Messages func(childComplexity int) int
-		Provider func(childComplexity int) int
+		Messages  func(childComplexity int) int
+		Providers func(childComplexity int) int
 	}
 
 	Mutation struct {
-		NewGlobalMessage func(childComplexity int, input NewGlobalMessageInput) int
-		NewMessage       func(childComplexity int, input NewMessageInput) int
-	}
-
-	NewGlobalMessagePayload struct {
-		Status func(childComplexity int) int
+		NewMessage func(childComplexity int, input NewMessageInput) int
 	}
 
 	NewMessagePayload struct {
-		Message  func(childComplexity int) int
-		Provider func(childComplexity int) int
+		Providers func(childComplexity int) int
+		Status    func(childComplexity int) int
 	}
 
 	Query struct {
-		GlobalMessageCount func(childComplexity int) int
-		GlobalMessages     func(childComplexity int) int
-		Message            func(childComplexity int, id string, provider MessageProvider) int
-		MessageCount       func(childComplexity int, provider MessageProvider) int
-		Messages           func(childComplexity int, provider MessageProvider) int
+		Message      func(childComplexity int, id string, provider MessageProvider) int
+		MessageCount func(childComplexity int, providers []MessageProvider) int
+		Messages     func(childComplexity int, providers []MessageProvider) int
 	}
 
 	Subscription struct {
@@ -109,14 +94,11 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	NewMessage(ctx context.Context, input NewMessageInput) (*NewMessagePayload, error)
-	NewGlobalMessage(ctx context.Context, input NewGlobalMessageInput) (*NewGlobalMessagePayload, error)
 }
 type QueryResolver interface {
 	Message(ctx context.Context, id string, provider MessageProvider) (*MessagePayload, error)
-	Messages(ctx context.Context, provider MessageProvider) (*MessagesPayload, error)
-	MessageCount(ctx context.Context, provider MessageProvider) (*MessageCountPayload, error)
-	GlobalMessages(ctx context.Context) (*GlobalMessagesPayload, error)
-	GlobalMessageCount(ctx context.Context) (*GlobalMessageCountPayload, error)
+	Messages(ctx context.Context, providers []MessageProvider) (*MessagesPayload, error)
+	MessageCount(ctx context.Context, providers []MessageProvider) (*MessageCountPayload, error)
 }
 type SubscriptionResolver interface {
 	MessageCreated(ctx context.Context) (<-chan *MessageCreatedPayload, error)
@@ -136,20 +118,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
-
-	case "GlobalMessageCountPayload.count":
-		if e.complexity.GlobalMessageCountPayload.Count == nil {
-			break
-		}
-
-		return e.complexity.GlobalMessageCountPayload.Count(childComplexity), true
-
-	case "GlobalMessagesPayload.messages":
-		if e.complexity.GlobalMessagesPayload.Messages == nil {
-			break
-		}
-
-		return e.complexity.GlobalMessagesPayload.Messages(childComplexity), true
 
 	case "Message.created":
 		if e.complexity.Message.Created == nil {
@@ -186,12 +154,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MessageCountPayload.Count(childComplexity), true
 
-	case "MessageCountPayload.provider":
-		if e.complexity.MessageCountPayload.Provider == nil {
+	case "MessageCountPayload.providers":
+		if e.complexity.MessageCountPayload.Providers == nil {
 			break
 		}
 
-		return e.complexity.MessageCountPayload.Provider(childComplexity), true
+		return e.complexity.MessageCountPayload.Providers(childComplexity), true
 
 	case "MessageCreatedPayload.message":
 		if e.complexity.MessageCreatedPayload.Message == nil {
@@ -228,24 +196,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MessagesPayload.Messages(childComplexity), true
 
-	case "MessagesPayload.provider":
-		if e.complexity.MessagesPayload.Provider == nil {
+	case "MessagesPayload.providers":
+		if e.complexity.MessagesPayload.Providers == nil {
 			break
 		}
 
-		return e.complexity.MessagesPayload.Provider(childComplexity), true
-
-	case "Mutation.newGlobalMessage":
-		if e.complexity.Mutation.NewGlobalMessage == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_newGlobalMessage_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.NewGlobalMessage(childComplexity, args["input"].(NewGlobalMessageInput)), true
+		return e.complexity.MessagesPayload.Providers(childComplexity), true
 
 	case "Mutation.newMessage":
 		if e.complexity.Mutation.NewMessage == nil {
@@ -259,40 +215,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.NewMessage(childComplexity, args["input"].(NewMessageInput)), true
 
-	case "NewGlobalMessagePayload.status":
-		if e.complexity.NewGlobalMessagePayload.Status == nil {
+	case "NewMessagePayload.providers":
+		if e.complexity.NewMessagePayload.Providers == nil {
 			break
 		}
 
-		return e.complexity.NewGlobalMessagePayload.Status(childComplexity), true
+		return e.complexity.NewMessagePayload.Providers(childComplexity), true
 
-	case "NewMessagePayload.message":
-		if e.complexity.NewMessagePayload.Message == nil {
+	case "NewMessagePayload.status":
+		if e.complexity.NewMessagePayload.Status == nil {
 			break
 		}
 
-		return e.complexity.NewMessagePayload.Message(childComplexity), true
-
-	case "NewMessagePayload.provider":
-		if e.complexity.NewMessagePayload.Provider == nil {
-			break
-		}
-
-		return e.complexity.NewMessagePayload.Provider(childComplexity), true
-
-	case "Query.globalMessageCount":
-		if e.complexity.Query.GlobalMessageCount == nil {
-			break
-		}
-
-		return e.complexity.Query.GlobalMessageCount(childComplexity), true
-
-	case "Query.globalMessages":
-		if e.complexity.Query.GlobalMessages == nil {
-			break
-		}
-
-		return e.complexity.Query.GlobalMessages(childComplexity), true
+		return e.complexity.NewMessagePayload.Status(childComplexity), true
 
 	case "Query.message":
 		if e.complexity.Query.Message == nil {
@@ -316,7 +251,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.MessageCount(childComplexity, args["provider"].(MessageProvider)), true
+		return e.complexity.Query.MessageCount(childComplexity, args["providers"].([]MessageProvider)), true
 
 	case "Query.messages":
 		if e.complexity.Query.Messages == nil {
@@ -328,7 +263,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Messages(childComplexity, args["provider"].(MessageProvider)), true
+		return e.complexity.Query.Messages(childComplexity, args["providers"].([]MessageProvider)), true
 
 	case "Subscription.messageCreated":
 		if e.complexity.Subscription.MessageCreated == nil {
@@ -439,53 +374,34 @@ type MessagePayload {
 
 type MessagesPayload {
     messages: [Message!]!
-    provider: MessageProvider!
+    providers: [MessageProvider!]!
 }
 
 type MessageCountPayload {
     count: Int!
-    provider: MessageProvider!
-}
-
-type GlobalMessagesPayload {
-    messages: [Message!]!
-}
-
-type GlobalMessageCountPayload {
-    count: Int!
+    providers: [MessageProvider!]!
 }
 
 extend type Query {
     message(id: String!, provider: MessageProvider!): MessagePayload!
-    messages(provider: MessageProvider!): MessagesPayload!
-    messageCount(provider: MessageProvider!): MessageCountPayload!
-    globalMessages: GlobalMessagesPayload!
-    globalMessageCount: GlobalMessageCountPayload!
+    messages(providers: [MessageProvider!]!): MessagesPayload!
+    messageCount(providers: [MessageProvider!]!): MessageCountPayload!
 }
 
 # Mutation
 
 input NewMessageInput {
-    provider: MessageProvider!
-    data: String!
-}
-
-input NewGlobalMessageInput {
+    providers: [MessageProvider!]!
     data: String!
 }
 
 type NewMessagePayload {
-    message: Message!
-    provider: MessageProvider!
-}
-
-type NewGlobalMessagePayload {
     status: String!
+    providers: [MessageProvider!]!
 }
 
 extend type Mutation {
     newMessage(input: NewMessageInput!): NewMessagePayload!
-    newGlobalMessage(input: NewGlobalMessageInput!): NewGlobalMessagePayload!
 }
 
 # Subscription
@@ -516,21 +432,6 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
-
-func (ec *executionContext) field_Mutation_newGlobalMessage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 NewGlobalMessageInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewGlobalMessageInput2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐNewGlobalMessageInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
 
 func (ec *executionContext) field_Mutation_newMessage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -565,15 +466,15 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_messageCount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 MessageProvider
-	if tmp, ok := rawArgs["provider"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
-		arg0, err = ec.unmarshalNMessageProvider2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProvider(ctx, tmp)
+	var arg0 []MessageProvider
+	if tmp, ok := rawArgs["providers"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("providers"))
+		arg0, err = ec.unmarshalNMessageProvider2ᚕgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProviderᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["provider"] = arg0
+	args["providers"] = arg0
 	return args, nil
 }
 
@@ -604,15 +505,15 @@ func (ec *executionContext) field_Query_message_args(ctx context.Context, rawArg
 func (ec *executionContext) field_Query_messages_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 MessageProvider
-	if tmp, ok := rawArgs["provider"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
-		arg0, err = ec.unmarshalNMessageProvider2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProvider(ctx, tmp)
+	var arg0 []MessageProvider
+	if tmp, ok := rawArgs["providers"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("providers"))
+		arg0, err = ec.unmarshalNMessageProvider2ᚕgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProviderᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["provider"] = arg0
+	args["providers"] = arg0
 	return args, nil
 }
 
@@ -653,104 +554,6 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
-
-func (ec *executionContext) _GlobalMessageCountPayload_count(ctx context.Context, field graphql.CollectedField, obj *GlobalMessageCountPayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_GlobalMessageCountPayload_count(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Count, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_GlobalMessageCountPayload_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "GlobalMessageCountPayload",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _GlobalMessagesPayload_messages(ctx context.Context, field graphql.CollectedField, obj *GlobalMessagesPayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_GlobalMessagesPayload_messages(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Messages, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*Message)
-	fc.Result = res
-	return ec.marshalNMessage2ᚕᚖgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_GlobalMessagesPayload_messages(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "GlobalMessagesPayload",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Message_id(ctx, field)
-			case "data":
-				return ec.fieldContext_Message_data(ctx, field)
-			case "created":
-				return ec.fieldContext_Message_created(ctx, field)
-			case "modified":
-				return ec.fieldContext_Message_modified(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
-		},
-	}
-	return fc, nil
-}
 
 func (ec *executionContext) _Message_id(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Message_id(ctx, field)
@@ -972,8 +775,8 @@ func (ec *executionContext) fieldContext_MessageCountPayload_count(ctx context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _MessageCountPayload_provider(ctx context.Context, field graphql.CollectedField, obj *MessageCountPayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MessageCountPayload_provider(ctx, field)
+func (ec *executionContext) _MessageCountPayload_providers(ctx context.Context, field graphql.CollectedField, obj *MessageCountPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageCountPayload_providers(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -986,7 +789,7 @@ func (ec *executionContext) _MessageCountPayload_provider(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Provider, nil
+		return obj.Providers, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -998,12 +801,12 @@ func (ec *executionContext) _MessageCountPayload_provider(ctx context.Context, f
 		}
 		return graphql.Null
 	}
-	res := resTmp.(MessageProvider)
+	res := resTmp.([]MessageProvider)
 	fc.Result = res
-	return ec.marshalNMessageProvider2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProvider(ctx, field.Selections, res)
+	return ec.marshalNMessageProvider2ᚕgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProviderᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MessageCountPayload_provider(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MessageCountPayload_providers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "MessageCountPayload",
 		Field:      field,
@@ -1266,8 +1069,8 @@ func (ec *executionContext) fieldContext_MessagesPayload_messages(ctx context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _MessagesPayload_provider(ctx context.Context, field graphql.CollectedField, obj *MessagesPayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MessagesPayload_provider(ctx, field)
+func (ec *executionContext) _MessagesPayload_providers(ctx context.Context, field graphql.CollectedField, obj *MessagesPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessagesPayload_providers(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1280,7 +1083,7 @@ func (ec *executionContext) _MessagesPayload_provider(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Provider, nil
+		return obj.Providers, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1292,12 +1095,12 @@ func (ec *executionContext) _MessagesPayload_provider(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(MessageProvider)
+	res := resTmp.([]MessageProvider)
 	fc.Result = res
-	return ec.marshalNMessageProvider2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProvider(ctx, field.Selections, res)
+	return ec.marshalNMessageProvider2ᚕgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProviderᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MessagesPayload_provider(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MessagesPayload_providers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "MessagesPayload",
 		Field:      field,
@@ -1349,10 +1152,10 @@ func (ec *executionContext) fieldContext_Mutation_newMessage(ctx context.Context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "message":
-				return ec.fieldContext_NewMessagePayload_message(ctx, field)
-			case "provider":
-				return ec.fieldContext_NewMessagePayload_provider(ctx, field)
+			case "status":
+				return ec.fieldContext_NewMessagePayload_status(ctx, field)
+			case "providers":
+				return ec.fieldContext_NewMessagePayload_providers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type NewMessagePayload", field.Name)
 		},
@@ -1371,67 +1174,8 @@ func (ec *executionContext) fieldContext_Mutation_newMessage(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_newGlobalMessage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_newGlobalMessage(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().NewGlobalMessage(rctx, fc.Args["input"].(NewGlobalMessageInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*NewGlobalMessagePayload)
-	fc.Result = res
-	return ec.marshalNNewGlobalMessagePayload2ᚖgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐNewGlobalMessagePayload(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_newGlobalMessage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "status":
-				return ec.fieldContext_NewGlobalMessagePayload_status(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type NewGlobalMessagePayload", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_newGlobalMessage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _NewGlobalMessagePayload_status(ctx context.Context, field graphql.CollectedField, obj *NewGlobalMessagePayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_NewGlobalMessagePayload_status(ctx, field)
+func (ec *executionContext) _NewMessagePayload_status(ctx context.Context, field graphql.CollectedField, obj *NewMessagePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_NewMessagePayload_status(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1461,9 +1205,9 @@ func (ec *executionContext) _NewGlobalMessagePayload_status(ctx context.Context,
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_NewGlobalMessagePayload_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_NewMessagePayload_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "NewGlobalMessagePayload",
+		Object:     "NewMessagePayload",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -1474,8 +1218,8 @@ func (ec *executionContext) fieldContext_NewGlobalMessagePayload_status(ctx cont
 	return fc, nil
 }
 
-func (ec *executionContext) _NewMessagePayload_message(ctx context.Context, field graphql.CollectedField, obj *NewMessagePayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_NewMessagePayload_message(ctx, field)
+func (ec *executionContext) _NewMessagePayload_providers(ctx context.Context, field graphql.CollectedField, obj *NewMessagePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_NewMessagePayload_providers(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1488,7 +1232,7 @@ func (ec *executionContext) _NewMessagePayload_message(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
+		return obj.Providers, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1500,66 +1244,12 @@ func (ec *executionContext) _NewMessagePayload_message(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Message)
+	res := resTmp.([]MessageProvider)
 	fc.Result = res
-	return ec.marshalNMessage2ᚖgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessage(ctx, field.Selections, res)
+	return ec.marshalNMessageProvider2ᚕgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProviderᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_NewMessagePayload_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "NewMessagePayload",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Message_id(ctx, field)
-			case "data":
-				return ec.fieldContext_Message_data(ctx, field)
-			case "created":
-				return ec.fieldContext_Message_created(ctx, field)
-			case "modified":
-				return ec.fieldContext_Message_modified(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _NewMessagePayload_provider(ctx context.Context, field graphql.CollectedField, obj *NewMessagePayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_NewMessagePayload_provider(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Provider, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(MessageProvider)
-	fc.Result = res
-	return ec.marshalNMessageProvider2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProvider(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_NewMessagePayload_provider(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_NewMessagePayload_providers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "NewMessagePayload",
 		Field:      field,
@@ -1647,7 +1337,7 @@ func (ec *executionContext) _Query_messages(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Messages(rctx, fc.Args["provider"].(MessageProvider))
+		return ec.resolvers.Query().Messages(rctx, fc.Args["providers"].([]MessageProvider))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1674,8 +1364,8 @@ func (ec *executionContext) fieldContext_Query_messages(ctx context.Context, fie
 			switch field.Name {
 			case "messages":
 				return ec.fieldContext_MessagesPayload_messages(ctx, field)
-			case "provider":
-				return ec.fieldContext_MessagesPayload_provider(ctx, field)
+			case "providers":
+				return ec.fieldContext_MessagesPayload_providers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type MessagesPayload", field.Name)
 		},
@@ -1708,7 +1398,7 @@ func (ec *executionContext) _Query_messageCount(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().MessageCount(rctx, fc.Args["provider"].(MessageProvider))
+		return ec.resolvers.Query().MessageCount(rctx, fc.Args["providers"].([]MessageProvider))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1735,8 +1425,8 @@ func (ec *executionContext) fieldContext_Query_messageCount(ctx context.Context,
 			switch field.Name {
 			case "count":
 				return ec.fieldContext_MessageCountPayload_count(ctx, field)
-			case "provider":
-				return ec.fieldContext_MessageCountPayload_provider(ctx, field)
+			case "providers":
+				return ec.fieldContext_MessageCountPayload_providers(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type MessageCountPayload", field.Name)
 		},
@@ -1751,102 +1441,6 @@ func (ec *executionContext) fieldContext_Query_messageCount(ctx context.Context,
 	if fc.Args, err = ec.field_Query_messageCount_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_globalMessages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_globalMessages(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GlobalMessages(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*GlobalMessagesPayload)
-	fc.Result = res
-	return ec.marshalNGlobalMessagesPayload2ᚖgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐGlobalMessagesPayload(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_globalMessages(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "messages":
-				return ec.fieldContext_GlobalMessagesPayload_messages(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type GlobalMessagesPayload", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_globalMessageCount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_globalMessageCount(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GlobalMessageCount(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*GlobalMessageCountPayload)
-	fc.Result = res
-	return ec.marshalNGlobalMessageCountPayload2ᚖgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐGlobalMessageCountPayload(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_globalMessageCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "count":
-				return ec.fieldContext_GlobalMessageCountPayload_count(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type GlobalMessageCountPayload", field.Name)
-		},
 	}
 	return fc, nil
 }
@@ -3813,29 +3407,6 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputNewGlobalMessageInput(ctx context.Context, obj interface{}) (NewGlobalMessageInput, error) {
-	var it NewGlobalMessageInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	for k, v := range asMap {
-		switch k {
-		case "data":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
-			it.Data, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputNewMessageInput(ctx context.Context, obj interface{}) (NewMessageInput, error) {
 	var it NewMessageInput
 	asMap := map[string]interface{}{}
@@ -3845,11 +3416,11 @@ func (ec *executionContext) unmarshalInputNewMessageInput(ctx context.Context, o
 
 	for k, v := range asMap {
 		switch k {
-		case "provider":
+		case "providers":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
-			it.Provider, err = ec.unmarshalNMessageProvider2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProvider(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("providers"))
+			it.Providers, err = ec.unmarshalNMessageProvider2ᚕgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProviderᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3874,68 +3445,6 @@ func (ec *executionContext) unmarshalInputNewMessageInput(ctx context.Context, o
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
-
-var globalMessageCountPayloadImplementors = []string{"GlobalMessageCountPayload"}
-
-func (ec *executionContext) _GlobalMessageCountPayload(ctx context.Context, sel ast.SelectionSet, obj *GlobalMessageCountPayload) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, globalMessageCountPayloadImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("GlobalMessageCountPayload")
-		case "count":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._GlobalMessageCountPayload_count(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var globalMessagesPayloadImplementors = []string{"GlobalMessagesPayload"}
-
-func (ec *executionContext) _GlobalMessagesPayload(ctx context.Context, sel ast.SelectionSet, obj *GlobalMessagesPayload) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, globalMessagesPayloadImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("GlobalMessagesPayload")
-		case "messages":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._GlobalMessagesPayload_messages(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
 
 var messageImplementors = []string{"Message"}
 
@@ -4018,9 +3527,9 @@ func (ec *executionContext) _MessageCountPayload(ctx context.Context, sel ast.Se
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "provider":
+		case "providers":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._MessageCountPayload_provider(ctx, field, obj)
+				return ec._MessageCountPayload_providers(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -4141,9 +3650,9 @@ func (ec *executionContext) _MessagesPayload(ctx context.Context, sel ast.Select
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "provider":
+		case "providers":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._MessagesPayload_provider(ctx, field, obj)
+				return ec._MessagesPayload_providers(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -4191,47 +3700,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "newGlobalMessage":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_newGlobalMessage(ctx, field)
-			}
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var newGlobalMessagePayloadImplementors = []string{"NewGlobalMessagePayload"}
-
-func (ec *executionContext) _NewGlobalMessagePayload(ctx context.Context, sel ast.SelectionSet, obj *NewGlobalMessagePayload) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, newGlobalMessagePayloadImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("NewGlobalMessagePayload")
-		case "status":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._NewGlobalMessagePayload_status(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4253,9 +3721,9 @@ func (ec *executionContext) _NewMessagePayload(ctx context.Context, sel ast.Sele
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("NewMessagePayload")
-		case "message":
+		case "status":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._NewMessagePayload_message(ctx, field, obj)
+				return ec._NewMessagePayload_status(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -4263,9 +3731,9 @@ func (ec *executionContext) _NewMessagePayload(ctx context.Context, sel ast.Sele
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "provider":
+		case "providers":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._NewMessagePayload_provider(ctx, field, obj)
+				return ec._NewMessagePayload_providers(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -4359,52 +3827,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_messageCount(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
-		case "globalMessages":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_globalMessages(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
-		case "globalMessageCount":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_globalMessageCount(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -4901,34 +4323,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNGlobalMessageCountPayload2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐGlobalMessageCountPayload(ctx context.Context, sel ast.SelectionSet, v GlobalMessageCountPayload) graphql.Marshaler {
-	return ec._GlobalMessageCountPayload(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNGlobalMessageCountPayload2ᚖgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐGlobalMessageCountPayload(ctx context.Context, sel ast.SelectionSet, v *GlobalMessageCountPayload) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._GlobalMessageCountPayload(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNGlobalMessagesPayload2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐGlobalMessagesPayload(ctx context.Context, sel ast.SelectionSet, v GlobalMessagesPayload) graphql.Marshaler {
-	return ec._GlobalMessagesPayload(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNGlobalMessagesPayload2ᚖgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐGlobalMessagesPayload(ctx context.Context, sel ast.SelectionSet, v *GlobalMessagesPayload) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._GlobalMessagesPayload(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5050,6 +4444,67 @@ func (ec *executionContext) marshalNMessageProvider2githubᚗcomᚋkuceraᚑluka
 	return v
 }
 
+func (ec *executionContext) unmarshalNMessageProvider2ᚕgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProviderᚄ(ctx context.Context, v interface{}) ([]MessageProvider, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]MessageProvider, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNMessageProvider2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProvider(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNMessageProvider2ᚕgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProviderᚄ(ctx context.Context, sel ast.SelectionSet, v []MessageProvider) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNMessageProvider2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageProvider(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNMessagesPayload2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessagesPayload(ctx context.Context, sel ast.SelectionSet, v MessagesPayload) graphql.Marshaler {
 	return ec._MessagesPayload(ctx, sel, &v)
 }
@@ -5062,25 +4517,6 @@ func (ec *executionContext) marshalNMessagesPayload2ᚖgithubᚗcomᚋkuceraᚑl
 		return graphql.Null
 	}
 	return ec._MessagesPayload(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNNewGlobalMessageInput2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐNewGlobalMessageInput(ctx context.Context, v interface{}) (NewGlobalMessageInput, error) {
-	res, err := ec.unmarshalInputNewGlobalMessageInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNNewGlobalMessagePayload2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐNewGlobalMessagePayload(ctx context.Context, sel ast.SelectionSet, v NewGlobalMessagePayload) graphql.Marshaler {
-	return ec._NewGlobalMessagePayload(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNNewGlobalMessagePayload2ᚖgithubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐNewGlobalMessagePayload(ctx context.Context, sel ast.SelectionSet, v *NewGlobalMessagePayload) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._NewGlobalMessagePayload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNNewMessageInput2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐNewMessageInput(ctx context.Context, v interface{}) (NewMessageInput, error) {

@@ -17,28 +17,18 @@ type Message interface {
 	) (*gqlgen.Message, error)
 	List(
 		ctx context.Context,
-		provider gqlgen.MessageProvider,
-	) ([]*gqlgen.Message, error)
-	ListAll(
-		ctx context.Context,
+		providers ...gqlgen.MessageProvider,
 	) ([]*gqlgen.Message, error)
 	Count(
 		ctx context.Context,
-		provider gqlgen.MessageProvider,
-	) (int64, error)
-	CountAll(
-		ctx context.Context,
+		providers ...gqlgen.MessageProvider,
 	) (int64, error)
 	Create(
 		ctx context.Context,
 		data string,
-		provider gqlgen.MessageProvider,
-	) (*gqlgen.Message, error)
-	CreateAll(
-		ctx context.Context,
-		data string,
+		providers ...gqlgen.MessageProvider,
 	) (string, error)
-	Consume(
+	DeliverMessage(
 		ctx context.Context,
 		delivery amqp091.Delivery,
 		messages chan *gqlgen.MessageCreatedPayload,

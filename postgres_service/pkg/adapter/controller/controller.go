@@ -20,9 +20,13 @@ func (c *Controller) Setup(rabbitmqClient *rabbitmq.Client) error {
 
 	if err := rabbitmqClient.Consumer.Consume(
 		func(delivery amqp091.Delivery) {
-			c.Message.Consume(ctx, delivery)
+			c.Message.NewMessage(ctx, delivery)
 		},
-		rabbitmq.NewMessageRoutingKey,
+		amqp091.Table{
+			rabbitmq.ConsumerIdentifier: true,
+			"type":                      rabbitmq.NewMessageKey,
+			"x-match":                   "all",
+		},
 	); err != nil {
 		return fmt.Errorf("setup: failed to consume messages: %w", err)
 	}

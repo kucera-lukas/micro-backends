@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rabbitmq/amqp091-go"
@@ -100,7 +103,7 @@ LIMIT 100;`,
 	return data, nil
 }
 
-func (r *messageRepository) Consume(ctx context.Context, delivery amqp091.Delivery) {
+func (r *messageRepository) NewMessage(ctx context.Context, delivery amqp091.Delivery) {
 	msg, err := r.Create(ctx, string(delivery.Body))
 	if err != nil {
 		log.Printf("consume: failed to create message: %v\n", err)
@@ -119,13 +122,16 @@ func (r *messageRepository) Consume(ctx context.Context, delivery amqp091.Delive
     },
     "provider": %q
 }`,
-			msg.Id,
+			strconv.Itoa(int(msg.Id)),
 			msg.Data,
-			msg.Created.String(),
-			msg.Modified.String(),
+			msg.Created.Format(time.RFC3339),
+			msg.Modified.Format(time.RFC3339),
 			providerName,
 		),
-		rabbitmq.CreatedMessageRoutingKey,
+		amqp091.Table{
+			"provider": strings.ToLower(providerName),
+			"type":     rabbitmq.CreatedMessageKey,
+		},
 	); err != nil {
 		log.Printf(
 			"consume: failed to publish message creation message: %v\n",
@@ -135,8 +141,12 @@ func (r *messageRepository) Consume(ctx context.Context, delivery amqp091.Delive
 		return
 	}
 
+	ack(delivery)
+}
+
+func ack(delivery amqp091.Delivery) {
 	if err := delivery.Ack(false); err != nil {
-		log.Printf("consume: failed to ack delivery: %v\n", err)
+		log.Printf("failed to ack delivery: %v\n", err)
 	}
 }
 

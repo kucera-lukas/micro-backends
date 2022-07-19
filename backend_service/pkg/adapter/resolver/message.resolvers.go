@@ -6,6 +6,7 @@ package resolver
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/rabbitmq/amqp091-go"
 
@@ -14,65 +15,47 @@ import (
 )
 
 func (r *mutationResolver) NewMessage(ctx context.Context, input gqlgen.NewMessageInput) (*gqlgen.NewMessagePayload, error) {
-	message, err := r.controller.Message.Create(ctx, input.Data, input.Provider)
+	status, err := r.controller.Message.Create(
+		ctx,
+		input.Data,
+		input.Providers...,
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	return &gqlgen.NewMessagePayload{
-		Message:  message,
-		Provider: input.Provider,
+		Status:    status,
+		Providers: input.Providers,
 	}, nil
-}
-
-func (r *mutationResolver) NewGlobalMessage(ctx context.Context, input gqlgen.NewGlobalMessageInput) (*gqlgen.NewGlobalMessagePayload, error) {
-	result, err := r.controller.Message.CreateAll(ctx, input.Data)
-	if err != nil {
-		return nil, err
-	}
-
-	return &gqlgen.NewGlobalMessagePayload{Status: result}, nil
 }
 
 func (r *queryResolver) Message(ctx context.Context, id string, provider gqlgen.MessageProvider) (*gqlgen.MessagePayload, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Messages(ctx context.Context, provider gqlgen.MessageProvider) (*gqlgen.MessagesPayload, error) {
-	messages, err := r.controller.Message.List(ctx, provider)
+func (r *queryResolver) Messages(ctx context.Context, providers []gqlgen.MessageProvider) (*gqlgen.MessagesPayload, error) {
+	messages, err := r.controller.Message.List(ctx, providers...)
 	if err != nil {
 		return nil, err
 	}
 
 	return &gqlgen.MessagesPayload{
-		Messages: messages,
-		Provider: provider,
+		Messages:  messages,
+		Providers: providers,
 	}, err
 }
 
-func (r *queryResolver) MessageCount(ctx context.Context, provider gqlgen.MessageProvider) (*gqlgen.MessageCountPayload, error) {
-	count, err := r.controller.Message.Count(ctx, provider)
+func (r *queryResolver) MessageCount(ctx context.Context, providers []gqlgen.MessageProvider) (*gqlgen.MessageCountPayload, error) {
+	count, err := r.controller.Message.Count(ctx, providers...)
 	if err != nil {
 		return nil, err
 	}
 
 	return &gqlgen.MessageCountPayload{
-		Count:    int(count),
-		Provider: provider,
+		Count:     int(count),
+		Providers: providers,
 	}, nil
-}
-
-func (r *queryResolver) GlobalMessages(ctx context.Context) (*gqlgen.GlobalMessagesPayload, error) {
-	panic("aa")
-}
-
-func (r *queryResolver) GlobalMessageCount(ctx context.Context) (*gqlgen.GlobalMessageCountPayload, error) {
-	count, err := r.controller.Message.CountAll(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &gqlgen.GlobalMessageCountPayload{Count: int(count)}, nil
 }
 
 func (r *subscriptionResolver) MessageCreated(ctx context.Context) (<-chan *gqlgen.MessageCreatedPayload, error) {
@@ -80,11 +63,22 @@ func (r *subscriptionResolver) MessageCreated(ctx context.Context) (<-chan *gqlg
 
 	if err := r.rabbitmqClient.Consumer.Consume(
 		func(delivery amqp091.Delivery) {
-			r.controller.Message.Consume(ctx, delivery, messages)
+			r.controller.Message.DeliverMessage(ctx, delivery, messages)
 		},
-		rabbitmq.CreatedMessageRoutingKey,
+		amqp091.Table{
+			"provider": strings.ToLower(gqlgen.MessageProviderMongo.String()),
+			"type":     rabbitmq.CreatedMessageKey,
+			"x-match":  "all",
+		}, amqp091.Table{
+			"provider": strings.ToLower(gqlgen.MessageProviderPostgres.String()),
+			"type":     rabbitmq.CreatedMessageKey,
+			"x-match":  "all",
+		},
 	); err != nil {
-		return nil, fmt.Errorf("error consuming messages: %w", err)
+		return nil, fmt.Errorf(
+			"message_created: error consuming messages: %w",
+			err,
+		)
 	}
 
 	return messages, nil

@@ -6,9 +6,9 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
-func declareQueue(channel *amqp091.Channel) (amqp091.Queue, error) {
+func declareQueue(channel *amqp091.Channel, name string) (amqp091.Queue, error) {
 	return channel.QueueDeclare(
-		"",
+		name,
 		true,  // durable
 		false, // autoDelete
 		false, // exclusive
@@ -32,14 +32,15 @@ func declareExchange(channel *amqp091.Channel, name string, kind string) error {
 func bindQueue(
 	channel *amqp091.Channel,
 	queue amqp091.Queue,
-	topic string,
+	exchange string,
+	args amqp091.Table,
 ) error {
 	return channel.QueueBind(
 		queue.Name,
-		topic,
-		ExchangeName,
+		"", // 'headers' exchange ignores the routing key
+		exchange,
 		false, // noWait
-		nil,   // args
+		args,
 	)
 }
 

@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	ExchangeName             = "message_events"
-	ExchangeKind             = "topic"
-	NewMessageRoutingKey     = "new_message"
-	CreatedMessageRoutingKey = "created_message"
+	ExchangeName      = "message_events"
+	ExchangeKind      = amqp091.ExchangeHeaders
+	NewMessageKey     = "new_message"
+	CreatedMessageKey = "created_message"
 )
 
 type Client struct {
