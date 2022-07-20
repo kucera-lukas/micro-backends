@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
+	"sort"
 	"strings"
 
 	"github.com/rabbitmq/amqp091-go"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/kucera-lukas/micro-backends/backend-service/gqlgen"
 	"github.com/kucera-lukas/micro-backends/backend-service/pkg/adapter/controller"
@@ -36,21 +37,49 @@ type messageRepository struct {
 	rabbitmqClient *rabbitmq.Client
 }
 
+type messageGetter interface {
+	GetId() string
+	GetData() string
+	GetCreated() *timestamppb.Timestamp
+	GetModified() *timestamppb.Timestamp
+}
+
 func (m messageRepository) Get(
 	ctx context.Context,
 	id string,
 	provider gqlgen.MessageProvider,
-) (*gqlgen.Message, error) {
-	// TODO implement me
-	panic("implement me")
+) (message *gqlgen.Message, err error) {
+	var response messageGetter
+
+	if provider == gqlgen.MessageProviderMongo {
+		response, err = m.mongoClient.GetMessage(
+			ctx,
+			&pbmongo.GetMessageRequest{Id: id},
+		)
+	} else {
+		response, err = m.postgresClient.GetMessage(
+			ctx,
+			&pbpostgres.GetMessageRequest{Id: id},
+		)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &gqlgen.Message{
+		ID:       response.GetId(),
+		Data:     response.GetData(),
+		Created:  response.GetCreated().AsTime(),
+		Modified: response.GetModified().AsTime(),
+	}, nil
 }
 
 func (m messageRepository) List(
 	ctx context.Context,
+	sortField gqlgen.MessageSortField,
 	providers ...gqlgen.MessageProvider,
-) ([]*gqlgen.Message, error) {
-	var messages []*gqlgen.Message
-
+) (messages []*gqlgen.Message, err error) {
 	for _, provider := range providers {
 		if provider == gqlgen.MessageProviderMongo {
 			response, err := m.mongoClient.GetMessages(
@@ -80,7 +109,7 @@ func (m messageRepository) List(
 
 			for _, message := range response.GetMessages() {
 				messages = append(messages, &gqlgen.Message{
-					ID:       strconv.Itoa(int(message.GetId())),
+					ID:       message.GetId(),
 					Data:     message.GetData(),
 					Created:  message.GetCreated().AsTime(),
 					Modified: message.GetModified().AsTime(),
@@ -89,10 +118,12 @@ func (m messageRepository) List(
 		}
 	}
 
+	sort.Slice(messages, getMessageSortFunc(messages, sortField))
+
 	return messages, nil
 }
 
-type Counter interface {
+type counter interface {
 	GetCount() int64
 }
 
@@ -100,7 +131,7 @@ func (m messageRepository) Count(
 	ctx context.Context,
 	providers ...gqlgen.MessageProvider,
 ) (count int64, err error) {
-	var response Counter
+	var response counter
 
 	for _, provider := range providers {
 		if provider == gqlgen.MessageProviderMongo {
@@ -130,6 +161,10 @@ func (m messageRepository) Create(
 	data string,
 	providers ...gqlgen.MessageProvider,
 ) (string, error) {
+	if len(providers) == 0 {
+		return "You didn't provide any providers :(", nil
+	}
+
 	table := amqp091.Table{"type": rabbitmq.NewMessageKey}
 
 	for _, provider := range providers {
@@ -171,5 +206,28 @@ func (m messageRepository) DeliverMessage(
 
 	if err := delivery.Ack(false); err != nil {
 		log.Printf("consume: failed to ack delivery: %v\n", err)
+	}
+}
+
+func getMessageSortFunc(
+	messages []*gqlgen.Message,
+	field gqlgen.MessageSortField,
+) func(i, j int) bool {
+	if field == gqlgen.MessageSortFieldID {
+		return func(i, j int) bool {
+			return messages[i].ID < messages[i].ID
+		}
+	} else if field == gqlgen.MessageSortFieldData {
+		return func(i, j int) bool {
+			return messages[i].Data < messages[i].Data
+		}
+	} else if field == gqlgen.MessageSortFieldCreated {
+		return func(i, j int) bool {
+			return messages[i].Created.Before(messages[i].Created)
+		}
+	} else {
+		return func(i, j int) bool {
+			return messages[i].Modified.Before(messages[i].Modified)
+		}
 	}
 }

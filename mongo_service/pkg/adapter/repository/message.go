@@ -43,6 +43,19 @@ func NewMessageRepository(
 	}
 }
 
+func (r *messageRepository) Get(ctx context.Context, id string) (*model.Message, error) {
+	var message model.Message
+
+	if err := r.collection.FindOne(
+		ctx,
+		bson.D{{"ID", id}},
+	).Decode(&message); err != nil {
+		return nil, fmt.Errorf("get: %w", err)
+	}
+
+	return &message, nil
+}
+
 func (r *messageRepository) Create(
 	ctx context.Context,
 	data string,

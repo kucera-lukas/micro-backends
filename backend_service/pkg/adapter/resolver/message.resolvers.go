@@ -31,11 +31,19 @@ func (r *mutationResolver) NewMessage(ctx context.Context, input gqlgen.NewMessa
 }
 
 func (r *queryResolver) Message(ctx context.Context, id string, provider gqlgen.MessageProvider) (*gqlgen.MessagePayload, error) {
-	panic(fmt.Errorf("not implemented"))
+	message, err := r.controller.Message.Get(ctx, id, provider)
+	if err != nil {
+		return nil, err
+	}
+
+	return &gqlgen.MessagePayload{
+		Message:  message,
+		Provider: provider,
+	}, nil
 }
 
-func (r *queryResolver) Messages(ctx context.Context, providers []gqlgen.MessageProvider) (*gqlgen.MessagesPayload, error) {
-	messages, err := r.controller.Message.List(ctx, providers...)
+func (r *queryResolver) Messages(ctx context.Context, providers []gqlgen.MessageProvider, sortField gqlgen.MessageSortField) (*gqlgen.MessagesPayload, error) {
+	messages, err := r.controller.Message.List(ctx, sortField, providers...)
 	if err != nil {
 		return nil, err
 	}

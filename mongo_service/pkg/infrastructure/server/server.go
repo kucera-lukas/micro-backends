@@ -61,6 +61,23 @@ func (s *Server) MessageCount(
 	return &pbmongo.MessageCountResponse{Count: count}, nil
 }
 
+func (s *Server) GetMessage(
+	ctx context.Context,
+	req *pbmongo.GetMessageRequest,
+) (*pbmongo.GetMessageResponse, error) {
+	message, err := s.controller.Message.Get(ctx, req.GetId())
+	if err != nil {
+		return nil, err
+	}
+
+	return &pbmongo.GetMessageResponse{
+		Id:       message.ID.Hex(),
+		Data:     message.Data,
+		Created:  timestamppb.New(message.Created),
+		Modified: timestamppb.New(message.Modified),
+	}, nil
+}
+
 func (s *Server) GetMessages(
 	ctx context.Context,
 	req *pbmongo.GetMessagesRequest,

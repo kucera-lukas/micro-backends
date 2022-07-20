@@ -3,6 +3,13 @@ enum MessageProvider {
     POSTGRES
 }
 
+enum MessageSortField {
+    ID
+    DATA
+    CREATED
+    MODIFIED
+}
+
 type Message {
     id: String!
     data: String!
@@ -29,7 +36,10 @@ type MessageCountPayload {
 
 extend type Query {
     message(id: String!, provider: MessageProvider!): MessagePayload!
-    messages(providers: [MessageProvider!]!): MessagesPayload!
+    messages(
+        providers: [MessageProvider!]!,
+        sortField: MessageSortField! = CREATED,
+    ): MessagesPayload!
     messageCount(providers: [MessageProvider!]!): MessageCountPayload!
 }
 

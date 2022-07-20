@@ -36,6 +36,35 @@ func NewMessageRepository(
 	}
 }
 
+func (r *messageRepository) Get(ctx context.Context, id string) (*model.Message, error) {
+	var message model.Message
+
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("get: failed to parse ID %q: %w", id, err)
+	}
+
+	row := r.pgxPool.QueryRow(
+		ctx,
+		`
+SELECT messages.id, messages.data, messages.created, messages.modified
+FROM messages
+WHERE messages.id = ($1);`,
+		idInt,
+	)
+
+	if err := row.Scan(
+		&message.Id,
+		&message.Data,
+		&message.Created,
+		&message.Modified,
+	); err != nil {
+		return nil, fmt.Errorf("get: %w", err)
+	}
+
+	return &message, nil
+}
+
 func (r *messageRepository) Create(
 	ctx context.Context,
 	data string,

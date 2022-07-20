@@ -25,6 +25,7 @@ const _ = grpc.SupportPackageIsVersion7
 type MessageServiceClient interface {
 	NewMessage(ctx context.Context, in *NewMessageRequest, opts ...grpc.CallOption) (*NewMessageResponse, error)
 	MessageCount(ctx context.Context, in *MessageCountRequest, opts ...grpc.CallOption) (*MessageCountResponse, error)
+	GetMessage(ctx context.Context, in *GetMessageRequest, opts ...grpc.CallOption) (*GetMessageResponse, error)
 	GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
 }
 
@@ -54,6 +55,15 @@ func (c *messageServiceClient) MessageCount(ctx context.Context, in *MessageCoun
 	return out, nil
 }
 
+func (c *messageServiceClient) GetMessage(ctx context.Context, in *GetMessageRequest, opts ...grpc.CallOption) (*GetMessageResponse, error) {
+	out := new(GetMessageResponse)
+	err := c.cc.Invoke(ctx, "/pbmongo.MessageService/GetMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *messageServiceClient) GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error) {
 	out := new(GetMessagesResponse)
 	err := c.cc.Invoke(ctx, "/pbmongo.MessageService/GetMessages", in, out, opts...)
@@ -69,6 +79,7 @@ func (c *messageServiceClient) GetMessages(ctx context.Context, in *GetMessagesR
 type MessageServiceServer interface {
 	NewMessage(context.Context, *NewMessageRequest) (*NewMessageResponse, error)
 	MessageCount(context.Context, *MessageCountRequest) (*MessageCountResponse, error)
+	GetMessage(context.Context, *GetMessageRequest) (*GetMessageResponse, error)
 	GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error)
 	mustEmbedUnimplementedMessageServiceServer()
 }
@@ -82,6 +93,10 @@ func (UnimplementedMessageServiceServer) NewMessage(context.Context, *NewMessage
 
 func (UnimplementedMessageServiceServer) MessageCount(context.Context, *MessageCountRequest) (*MessageCountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MessageCount not implemented")
+}
+
+func (UnimplementedMessageServiceServer) GetMessage(context.Context, *GetMessageRequest) (*GetMessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMessage not implemented")
 }
 
 func (UnimplementedMessageServiceServer) GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error) {
@@ -136,6 +151,24 @@ func _MessageService_MessageCount_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MessageService_GetMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessageServiceServer).GetMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pbmongo.MessageService/GetMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessageServiceServer).GetMessage(ctx, req.(*GetMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _MessageService_GetMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetMessagesRequest)
 	if err := dec(in); err != nil {
@@ -168,6 +201,10 @@ var MessageService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MessageCount",
 			Handler:    _MessageService_MessageCount_Handler,
+		},
+		{
+			MethodName: "GetMessage",
+			Handler:    _MessageService_GetMessage_Handler,
 		},
 		{
 			MethodName: "GetMessages",

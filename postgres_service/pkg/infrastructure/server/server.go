@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"time"
 
 	"google.golang.org/grpc"
@@ -42,7 +43,7 @@ func (s *Server) NewMessage(
 	}
 
 	return &pbpostgres.NewMessageResponse{
-		Id:       message.Id,
+		Id:       strconv.Itoa(message.Id),
 		Data:     message.Data,
 		Created:  timestamppb.New(message.Created),
 		Modified: timestamppb.New(message.Modified),
@@ -61,6 +62,23 @@ func (s *Server) MessageCount(
 	return &pbpostgres.MessageCountResponse{Count: count}, nil
 }
 
+func (s *Server) GetMessage(
+	ctx context.Context,
+	req *pbpostgres.GetMessageRequest,
+) (*pbpostgres.GetMessageResponse, error) {
+	message, err := s.controller.Message.Get(ctx, req.GetId())
+	if err != nil {
+		return nil, err
+	}
+
+	return &pbpostgres.GetMessageResponse{
+		Id:       strconv.Itoa(message.Id),
+		Data:     message.Data,
+		Created:  timestamppb.New(message.Created),
+		Modified: timestamppb.New(message.Modified),
+	}, nil
+}
+
 func (s *Server) GetMessages(
 	ctx context.Context,
 	req *pbpostgres.GetMessagesRequest,
@@ -74,7 +92,7 @@ func (s *Server) GetMessages(
 
 	for _, msg := range messageList {
 		messages = append(messages, &pbpostgres.GetMessageResponse{
-			Id:       msg.Id,
+			Id:       strconv.Itoa(msg.Id),
 			Data:     msg.Data,
 			Created:  timestamppb.New(msg.Created),
 			Modified: timestamppb.New(msg.Modified),

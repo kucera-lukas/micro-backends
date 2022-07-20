@@ -84,7 +84,7 @@ type ComplexityRoot struct {
 	Query struct {
 		Message      func(childComplexity int, id string, provider MessageProvider) int
 		MessageCount func(childComplexity int, providers []MessageProvider) int
-		Messages     func(childComplexity int, providers []MessageProvider) int
+		Messages     func(childComplexity int, providers []MessageProvider, sortField MessageSortField) int
 	}
 
 	Subscription struct {
@@ -97,7 +97,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Message(ctx context.Context, id string, provider MessageProvider) (*MessagePayload, error)
-	Messages(ctx context.Context, providers []MessageProvider) (*MessagesPayload, error)
+	Messages(ctx context.Context, providers []MessageProvider, sortField MessageSortField) (*MessagesPayload, error)
 	MessageCount(ctx context.Context, providers []MessageProvider) (*MessageCountPayload, error)
 }
 type SubscriptionResolver interface {
@@ -263,7 +263,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Messages(childComplexity, args["providers"].([]MessageProvider)), true
+		return e.complexity.Query.Messages(childComplexity, args["providers"].([]MessageProvider), args["sortField"].(MessageSortField)), true
 
 	case "Subscription.messageCreated":
 		if e.complexity.Subscription.MessageCreated == nil {
@@ -358,6 +358,13 @@ var sources = []*ast.Source{
     POSTGRES
 }
 
+enum MessageSortField {
+    ID
+    DATA
+    CREATED
+    MODIFIED
+}
+
 type Message {
     id: String!
     data: String!
@@ -384,7 +391,10 @@ type MessageCountPayload {
 
 extend type Query {
     message(id: String!, provider: MessageProvider!): MessagePayload!
-    messages(providers: [MessageProvider!]!): MessagesPayload!
+    messages(
+        providers: [MessageProvider!]!,
+        sortField: MessageSortField! = CREATED,
+    ): MessagesPayload!
     messageCount(providers: [MessageProvider!]!): MessageCountPayload!
 }
 
@@ -514,6 +524,15 @@ func (ec *executionContext) field_Query_messages_args(ctx context.Context, rawAr
 		}
 	}
 	args["providers"] = arg0
+	var arg1 MessageSortField
+	if tmp, ok := rawArgs["sortField"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sortField"))
+		arg1, err = ec.unmarshalNMessageSortField2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageSortField(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["sortField"] = arg1
 	return args, nil
 }
 
@@ -1337,7 +1356,7 @@ func (ec *executionContext) _Query_messages(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Messages(rctx, fc.Args["providers"].([]MessageProvider))
+		return ec.resolvers.Query().Messages(rctx, fc.Args["providers"].([]MessageProvider), fc.Args["sortField"].(MessageSortField))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4503,6 +4522,16 @@ func (ec *executionContext) marshalNMessageProvider2ᚕgithubᚗcomᚋkuceraᚑl
 	}
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalNMessageSortField2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageSortField(ctx context.Context, v interface{}) (MessageSortField, error) {
+	var res MessageSortField
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMessageSortField2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessageSortField(ctx context.Context, sel ast.SelectionSet, v MessageSortField) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNMessagesPayload2githubᚗcomᚋkuceraᚑlukasᚋmicroᚑbackendsᚋbackendᚑserviceᚋgqlgenᚐMessagesPayload(ctx context.Context, sel ast.SelectionSet, v MessagesPayload) graphql.Marshaler {

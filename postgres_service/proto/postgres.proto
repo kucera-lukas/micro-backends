@@ -10,7 +10,7 @@ message NewMessageRequest{
 }
 
 message NewMessageResponse{
-    uint32 id = 1;
+    string id = 1;
     string data = 2;
     google.protobuf.Timestamp created = 3;
     google.protobuf.Timestamp modified = 4;
@@ -22,14 +22,19 @@ message MessageCountResponse{
     int64 count = 1;
 }
 
-message GetMessagesRequest{}
+message GetMessageRequest{
+    string id = 1;
+}
 
 message GetMessageResponse{
-    uint32 id = 1;
+    string id = 1;
     string data = 2;
     google.protobuf.Timestamp created = 3;
     google.protobuf.Timestamp modified = 4;
 }
+
+message GetMessagesRequest{}
+
 message GetMessagesResponse{
     repeated GetMessageResponse messages = 1;
 }
@@ -37,5 +42,6 @@ message GetMessagesResponse{
 service MessageService{
     rpc NewMessage(NewMessageRequest) returns (NewMessageResponse) {};
     rpc MessageCount(MessageCountRequest) returns (MessageCountResponse) {};
+    rpc GetMessage(GetMessageRequest) returns (GetMessageResponse) {};
     rpc GetMessages(GetMessagesRequest) returns (GetMessagesResponse) {};
 }

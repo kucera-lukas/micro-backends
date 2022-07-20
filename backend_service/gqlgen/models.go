@@ -86,3 +86,48 @@ func (e *MessageProvider) UnmarshalGQL(v interface{}) error {
 func (e MessageProvider) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
+
+type MessageSortField string
+
+const (
+	MessageSortFieldID       MessageSortField = "ID"
+	MessageSortFieldData     MessageSortField = "DATA"
+	MessageSortFieldCreated  MessageSortField = "CREATED"
+	MessageSortFieldModified MessageSortField = "MODIFIED"
+)
+
+var AllMessageSortField = []MessageSortField{
+	MessageSortFieldID,
+	MessageSortFieldData,
+	MessageSortFieldCreated,
+	MessageSortFieldModified,
+}
+
+func (e MessageSortField) IsValid() bool {
+	switch e {
+	case MessageSortFieldID, MessageSortFieldData, MessageSortFieldCreated, MessageSortFieldModified:
+		return true
+	}
+	return false
+}
+
+func (e MessageSortField) String() string {
+	return string(e)
+}
+
+func (e *MessageSortField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = MessageSortField(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid MessageSortField", str)
+	}
+	return nil
+}
+
+func (e MessageSortField) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
