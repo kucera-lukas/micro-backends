@@ -46,9 +46,14 @@ func NewMessageRepository(
 func (r *messageRepository) Get(ctx context.Context, id string) (*model.Message, error) {
 	var message model.Message
 
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, fmt.Errorf("get: faild to parse id %q: %w", id, err)
+	}
+
 	if err := r.collection.FindOne(
 		ctx,
-		bson.D{{"ID", id}},
+		bson.D{{"_id", objectId}},
 	).Decode(&message); err != nil {
 		return nil, fmt.Errorf("get: %w", err)
 	}
