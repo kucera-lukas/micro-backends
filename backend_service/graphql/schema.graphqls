@@ -1,0 +1,10 @@
+scalar Time
+
+"The `Query` type, represents all of the entry points into our object graph."
+type Query
+
+"The `Mutation` type, represents all updates we can make to our data."
+type Mutation
+
+"The `Subscription` type, represents all ways to subscribe to updates to our graph."
+type Subscription

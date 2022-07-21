@@ -1,0 +1,72 @@
+enum MessageProvider {
+    MONGO
+    POSTGRES
+}
+
+enum MessageSortField {
+    ID
+    DATA
+    CREATED
+    MODIFIED
+}
+
+type Message {
+    id: String!
+    data: String!
+    created: Time!
+    modified: Time!
+}
+
+# Query
+
+type MessagePayload {
+    message: Message!
+    provider: MessageProvider!
+}
+
+type MessagesPayload {
+    messages: [Message!]!
+    providers: [MessageProvider!]!
+}
+
+type MessageCountPayload {
+    count: Int!
+    providers: [MessageProvider!]!
+}
+
+extend type Query {
+    message(id: String!, provider: MessageProvider!): MessagePayload!
+    messages(
+        providers: [MessageProvider!]!,
+        sortField: MessageSortField! = CREATED,
+        reverse: Boolean! = true,
+    ): MessagesPayload!
+    messageCount(providers: [MessageProvider!]!): MessageCountPayload!
+}
+
+# Mutation
+
+input NewMessageInput {
+    providers: [MessageProvider!]!
+    data: String!
+}
+
+type NewMessagePayload {
+    status: String!
+    providers: [MessageProvider!]!
+}
+
+extend type Mutation {
+    newMessage(input: NewMessageInput!): NewMessagePayload!
+}
+
+# Subscription
+
+type MessageCreatedPayload {
+    message: Message!
+    provider: MessageProvider!
+}
+
+extend type Subscription {
+    messageCreated: MessageCreatedPayload!
+}

@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # Maintain dependencies for GitHub Actions.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+
+  # Maintain dependencies for mongo_service Go Module.
+  - package-ecosystem: gomod
+    directory: /mongo_service
+    schedule:
+      interval: daily
+
+  # Maintain dependencies for postgres_service Go Module.
+  - package-ecosystem: gomod
+    directory: /postgres_service
+    schedule:
+      interval: daily

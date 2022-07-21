@@ -1,0 +1,26 @@
+run:
+  issues-exit-code: 1
+  allow-parallel-runners: true
+
+linters:
+  enable-all: true
+  disable:
+    # deprecated (since v1.38.0)
+    - scopelint
+    # deprecated (since v1.41.0)
+    - golint
+    # deprecated (since v1.38.0)
+    - interfacer
+    # deprecated (since v1.38.0)
+    - maligned
+    # irrelevant
+    - goerr113
+    # using goimports-reviser
+    - gci
+
+issue:
+  fix: true
+
+linters-settings:
+  lll:
+    line-length: 80

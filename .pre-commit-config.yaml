@@ -1,0 +1,30 @@
+ci:
+  skip: [make-fmt]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.6.2
+    hooks:
+      - id: prettier
+        files: \.(js|ts|jsx|tsx|css|less|html|json|markdown|md|yaml|yml)$
+  - repo: local
+    hooks:
+      - id: make-fmt
+        name: make fmt
+        entry: make fmt
+        language: system
+        files: \.go$
