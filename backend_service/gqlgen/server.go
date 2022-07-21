@@ -84,7 +84,7 @@ type ComplexityRoot struct {
 	Query struct {
 		Message      func(childComplexity int, id string, provider MessageProvider) int
 		MessageCount func(childComplexity int, providers []MessageProvider) int
-		Messages     func(childComplexity int, providers []MessageProvider, sortField MessageSortField) int
+		Messages     func(childComplexity int, providers []MessageProvider, sortField MessageSortField, reverse bool) int
 	}
 
 	Subscription struct {
@@ -97,7 +97,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Message(ctx context.Context, id string, provider MessageProvider) (*MessagePayload, error)
-	Messages(ctx context.Context, providers []MessageProvider, sortField MessageSortField) (*MessagesPayload, error)
+	Messages(ctx context.Context, providers []MessageProvider, sortField MessageSortField, reverse bool) (*MessagesPayload, error)
 	MessageCount(ctx context.Context, providers []MessageProvider) (*MessageCountPayload, error)
 }
 type SubscriptionResolver interface {
@@ -263,7 +263,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Messages(childComplexity, args["providers"].([]MessageProvider), args["sortField"].(MessageSortField)), true
+		return e.complexity.Query.Messages(childComplexity, args["providers"].([]MessageProvider), args["sortField"].(MessageSortField), args["reverse"].(bool)), true
 
 	case "Subscription.messageCreated":
 		if e.complexity.Subscription.MessageCreated == nil {
@@ -394,6 +394,7 @@ extend type Query {
     messages(
         providers: [MessageProvider!]!,
         sortField: MessageSortField! = CREATED,
+        reverse: Boolean! = true,
     ): MessagesPayload!
     messageCount(providers: [MessageProvider!]!): MessageCountPayload!
 }
@@ -533,6 +534,15 @@ func (ec *executionContext) field_Query_messages_args(ctx context.Context, rawAr
 		}
 	}
 	args["sortField"] = arg1
+	var arg2 bool
+	if tmp, ok := rawArgs["reverse"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reverse"))
+		arg2, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["reverse"] = arg2
 	return args, nil
 }
 
@@ -1356,7 +1366,7 @@ func (ec *executionContext) _Query_messages(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Messages(rctx, fc.Args["providers"].([]MessageProvider), fc.Args["sortField"].(MessageSortField))
+		return ec.resolvers.Query().Messages(rctx, fc.Args["providers"].([]MessageProvider), fc.Args["sortField"].(MessageSortField), fc.Args["reverse"].(bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

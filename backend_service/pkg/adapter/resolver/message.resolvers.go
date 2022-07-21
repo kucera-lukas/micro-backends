@@ -42,8 +42,13 @@ func (r *queryResolver) Message(ctx context.Context, id string, provider gqlgen.
 	}, nil
 }
 
-func (r *queryResolver) Messages(ctx context.Context, providers []gqlgen.MessageProvider, sortField gqlgen.MessageSortField) (*gqlgen.MessagesPayload, error) {
-	messages, err := r.controller.Message.List(ctx, sortField, providers...)
+func (r *queryResolver) Messages(ctx context.Context, providers []gqlgen.MessageProvider, sortField gqlgen.MessageSortField, reverse bool) (*gqlgen.MessagesPayload, error) {
+	messages, err := r.controller.Message.List(
+		ctx,
+		sortField,
+		reverse,
+		providers...,
+	)
 	if err != nil {
 		return nil, err
 	}

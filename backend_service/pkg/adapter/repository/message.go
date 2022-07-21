@@ -78,6 +78,7 @@ func (m messageRepository) Get(
 func (m messageRepository) List(
 	ctx context.Context,
 	sortField gqlgen.MessageSortField,
+	reverse bool,
 	providers ...gqlgen.MessageProvider,
 ) (messages []*gqlgen.Message, err error) {
 	for _, provider := range providers {
@@ -118,7 +119,7 @@ func (m messageRepository) List(
 		}
 	}
 
-	sort.Slice(messages, getMessageSortFunc(messages, sortField))
+	sort.Slice(messages, getMessageSortFunc(messages, sortField, reverse))
 
 	return messages, nil
 }
@@ -212,22 +213,47 @@ func (m messageRepository) DeliverMessage(
 func getMessageSortFunc(
 	messages []*gqlgen.Message,
 	field gqlgen.MessageSortField,
+	reverse bool,
 ) func(i, j int) bool {
 	if field == gqlgen.MessageSortFieldID {
-		return func(i, j int) bool {
-			return messages[i].ID < messages[i].ID
+		if reverse {
+			return func(i, j int) bool {
+				return messages[i].ID > messages[j].ID
+			}
+		} else {
+			return func(i, j int) bool {
+				return messages[i].ID < messages[j].ID
+			}
 		}
 	} else if field == gqlgen.MessageSortFieldData {
-		return func(i, j int) bool {
-			return messages[i].Data < messages[i].Data
+		if reverse {
+			return func(i, j int) bool {
+				return messages[i].Data > messages[j].Data
+			}
+		} else {
+			return func(i, j int) bool {
+				return messages[i].Data < messages[j].Data
+			}
 		}
 	} else if field == gqlgen.MessageSortFieldCreated {
-		return func(i, j int) bool {
-			return messages[i].Created.Before(messages[i].Created)
+		if reverse {
+			return func(i, j int) bool {
+				return messages[i].Created.After(messages[j].Created)
+			}
+		} else {
+			return func(i, j int) bool {
+				return messages[i].Created.Before(messages[j].Created)
+			}
 		}
 	} else {
-		return func(i, j int) bool {
-			return messages[i].Modified.Before(messages[i].Modified)
+		if reverse {
+			return func(i, j int) bool {
+				return messages[i].Modified.After(messages[j].Modified)
+			}
+		} else {
+			return func(i, j int) bool {
+				return messages[i].Modified.Before(messages[j].Modified)
+			}
 		}
 	}
 }

@@ -39,6 +39,7 @@ extend type Query {
     messages(
         providers: [MessageProvider!]!,
         sortField: MessageSortField! = CREATED,
+        reverse: Boolean! = true,
     ): MessagesPayload!
     messageCount(providers: [MessageProvider!]!): MessageCountPayload!
 }

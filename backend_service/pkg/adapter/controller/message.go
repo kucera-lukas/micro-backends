@@ -18,6 +18,7 @@ type Message interface {
 	List(
 		ctx context.Context,
 		sortField gqlgen.MessageSortField,
+		reverse bool,
 		providers ...gqlgen.MessageProvider,
 	) ([]*gqlgen.Message, error)
 	Count(
