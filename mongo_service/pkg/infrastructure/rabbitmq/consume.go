@@ -10,7 +10,7 @@ const (
 	ConsumerIdentifier = "mongo_service"
 )
 
-// Consumer for consuming AMQP events
+// Consumer for consuming AMQP events.
 type Consumer struct {
 	conn *amqp091.Connection
 }
@@ -19,8 +19,7 @@ type Consumer struct {
 func NewConsumer(conn *amqp091.Connection) (*Consumer, error) {
 	consumer := &Consumer{conn: conn}
 
-	err := consumer.setup()
-	if err != nil {
+	if err := consumer.setup(); err != nil {
 		return nil, err
 	}
 

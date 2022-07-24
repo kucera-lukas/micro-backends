@@ -26,22 +26,29 @@ type messageRepository struct {
 }
 
 // NewMessageRepository returns implementation of the controller.Message interface.
-func NewMessageRepository(
+func NewMessageRepository( // nolint:ireturn
 	pgxPool *pgxpool.Pool,
 	rabbitmqClient *rabbitmq.Client,
-) controller.Message { //nolint:ireturn
+) controller.Message {
 	return &messageRepository{
 		pgxPool:        pgxPool,
 		rabbitmqClient: rabbitmqClient,
 	}
 }
 
-func (r *messageRepository) Get(ctx context.Context, id string) (*model.Message, error) {
+func (r *messageRepository) Get(
+	ctx context.Context,
+	messageID string,
+) (*model.Message, error) {
 	var message model.Message
 
-	idInt, err := strconv.Atoi(id)
+	idInt, err := strconv.Atoi(messageID)
 	if err != nil {
-		return nil, fmt.Errorf("get: failed to parse ID %q: %w", id, err)
+		return nil, fmt.Errorf(
+			"get: failed to parse ID %q: %w",
+			messageID,
+			err,
+		)
 	}
 
 	row := r.pgxPool.QueryRow(
@@ -54,7 +61,7 @@ WHERE messages.id = ($1);`,
 	)
 
 	if err := row.Scan(
-		&message.Id,
+		&message.ID,
 		&message.Data,
 		&message.Created,
 		&message.Modified,
@@ -81,7 +88,7 @@ RETURNING messages.id, messages.data, messages.created, messages.modified;`,
 	)
 
 	if err := row.Scan(
-		&message.Id,
+		&message.ID,
 		&message.Data,
 		&message.Created,
 		&message.Modified,
@@ -96,15 +103,16 @@ func (r *messageRepository) Count(ctx context.Context) (int64, error) {
 	var count int64
 
 	row := r.pgxPool.QueryRow(ctx, "SELECT count(*) FROM messages;")
-	err := row.Scan(&count)
-	if err != nil {
+	if err := row.Scan(&count); err != nil {
 		return 0, fmt.Errorf("count: %w", err)
 	}
 
 	return count, nil
 }
 
-func (r *messageRepository) List(ctx context.Context) ([]*model.Message, error) {
+func (r *messageRepository) List(
+	ctx context.Context,
+) ([]*model.Message, error) {
 	var data []*model.Message
 
 	rows, err := r.pgxPool.Query(
@@ -121,7 +129,7 @@ LIMIT 100;`,
 	for rows.Next() {
 		var msg model.Message
 
-		err := rows.Scan(&msg.Id, &msg.Data, &msg.Created, &msg.Modified)
+		err := rows.Scan(&msg.ID, &msg.Data, &msg.Created, &msg.Modified)
 		if err != nil {
 			return nil, fmt.Errorf("list: %w", err)
 		}
@@ -132,11 +140,15 @@ LIMIT 100;`,
 	return data, nil
 }
 
-func (r *messageRepository) NewMessage(ctx context.Context, delivery amqp091.Delivery) {
+func (r *messageRepository) NewMessage(
+	ctx context.Context,
+	delivery amqp091.Delivery,
+) {
 	msg, err := r.Create(ctx, string(delivery.Body))
 	if err != nil {
 		log.Printf("consume: failed to create message: %v\n", err)
 		nack(delivery)
+
 		return
 	}
 
@@ -151,7 +163,7 @@ func (r *messageRepository) NewMessage(ctx context.Context, delivery amqp091.Del
     },
     "provider": %q
 }`,
-			strconv.Itoa(int(msg.Id)),
+			strconv.Itoa(msg.ID),
 			msg.Data,
 			msg.Created.Format(time.RFC3339),
 			msg.Modified.Format(time.RFC3339),
@@ -167,6 +179,7 @@ func (r *messageRepository) NewMessage(ctx context.Context, delivery amqp091.Del
 			err,
 		)
 		nack(delivery)
+
 		return
 	}
 

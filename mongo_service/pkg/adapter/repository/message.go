@@ -22,6 +22,7 @@ const (
 	databaseName   = "micro_backends"
 	collectionName = "messages"
 	providerName   = "MONGO"
+	listLimit      = 100
 )
 
 type messageRepository struct {
@@ -31,10 +32,10 @@ type messageRepository struct {
 
 // NewMessageRepository returns implementation of the
 // controller.Message interface.
-func NewMessageRepository(
+func NewMessageRepository( // nolint:ireturn
 	mongoClient *mongo.Client,
 	rabbitmqClient *rabbitmq.Client,
-) controller.Message { //nolint:ireturn
+) controller.Message {
 	return &messageRepository{
 		collection: mongoClient.
 			Database(databaseName).
@@ -43,17 +44,24 @@ func NewMessageRepository(
 	}
 }
 
-func (r *messageRepository) Get(ctx context.Context, id string) (*model.Message, error) {
+func (r *messageRepository) Get(
+	ctx context.Context,
+	messageID string,
+) (*model.Message, error) {
 	var message model.Message
 
-	objectId, err := primitive.ObjectIDFromHex(id)
+	objectID, err := primitive.ObjectIDFromHex(messageID)
 	if err != nil {
-		return nil, fmt.Errorf("get: faild to parse id %q: %w", id, err)
+		return nil, fmt.Errorf(
+			"get: faild to parse id %q: %w",
+			messageID,
+			err,
+		)
 	}
 
 	if err := r.collection.FindOne(
 		ctx,
-		bson.D{{"_id", objectId}},
+		bson.D{{Key: "_id", Value: objectID}},
 	).Decode(&message); err != nil {
 		return nil, fmt.Errorf("get: %w", err)
 	}
@@ -90,13 +98,15 @@ func (r *messageRepository) Count(ctx context.Context) (int64, error) {
 	return count, nil
 }
 
-func (r *messageRepository) List(ctx context.Context) ([]*model.Message, error) {
-	var data []*model.Message
+func (r *messageRepository) List(
+	ctx context.Context,
+) ([]*model.Message, error) {
+	data := make([]*model.Message, listLimit)
 
 	cursor, err := r.collection.Find(
 		ctx,
 		bson.D{},
-		options.Find().SetLimit(100),
+		options.Find().SetLimit(listLimit),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("list: %w", err)
@@ -109,11 +119,15 @@ func (r *messageRepository) List(ctx context.Context) ([]*model.Message, error) 
 	return data, nil
 }
 
-func (r *messageRepository) NewMessage(ctx context.Context, delivery amqp091.Delivery) {
+func (r *messageRepository) NewMessage(
+	ctx context.Context,
+	delivery amqp091.Delivery,
+) {
 	msg, err := r.Create(ctx, string(delivery.Body))
 	if err != nil {
 		log.Printf("consume: failed to create message: %v\n", err)
 		nack(delivery)
+
 		return
 	}
 
@@ -144,6 +158,7 @@ func (r *messageRepository) NewMessage(ctx context.Context, delivery amqp091.Del
 			err,
 		)
 		nack(delivery)
+
 		return
 	}
 

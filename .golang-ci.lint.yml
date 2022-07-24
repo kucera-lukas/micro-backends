@@ -2,6 +2,13 @@ run:
   issues-exit-code: 1
   allow-parallel-runners: true
 
+  skip-dirs:
+    - "proto"
+
+  skip-files:
+    - "pkg/adapter/resolver/resolver.go"
+    - "pkg/adapter/resolver/schema.resolvers.go"
+
 linters:
   enable-all: true
   disable:
@@ -18,8 +25,13 @@ linters:
     # using goimports-reviser
     - gci
 
-issue:
+issues:
   fix: true
+  exclude-rules:
+    - linters:
+        - lll
+      # ignore imports and comments
+      source: '"github.com/kucera-lukas/micro-backends|//'
 
 linters-settings:
   lll:

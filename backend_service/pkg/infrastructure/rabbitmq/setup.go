@@ -6,8 +6,11 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
-func declareQueue(channel *amqp091.Channel, name string) (amqp091.Queue, error) {
-	return channel.QueueDeclare(
+func declareQueue(
+	channel *amqp091.Channel,
+	name string,
+) (amqp091.Queue, error) {
+	return channel.QueueDeclare( // nolint:wrapcheck
 		name,
 		true,  // durable
 		false, // autoDelete
@@ -17,8 +20,11 @@ func declareQueue(channel *amqp091.Channel, name string) (amqp091.Queue, error) 
 	)
 }
 
-func declareExchange(channel *amqp091.Channel, name string, kind string) error {
-	return channel.ExchangeDeclare(
+func declareExchange(
+	channel *amqp091.Channel,
+	name, kind string,
+) error {
+	return channel.ExchangeDeclare( // nolint:wrapcheck
 		name,
 		kind,
 		true,  // durable
@@ -35,7 +41,7 @@ func bindQueue(
 	exchange string,
 	args amqp091.Table,
 ) error {
-	return channel.QueueBind(
+	return channel.QueueBind( // nolint:wrapcheck
 		queue.Name,
 		"", // 'headers' exchange ignores the routing key
 		exchange,

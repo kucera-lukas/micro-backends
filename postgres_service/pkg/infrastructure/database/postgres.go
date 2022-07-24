@@ -25,5 +25,6 @@ func New(ctx context.Context, config *env.Config) (*pgxpool.Pool, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
+
 	return client, nil
 }

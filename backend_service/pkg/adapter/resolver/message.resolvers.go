@@ -8,20 +8,23 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/rabbitmq/amqp091-go"
+	amqp091 "github.com/rabbitmq/amqp091-go"
 
 	"github.com/kucera-lukas/micro-backends/backend-service/gqlgen"
 	"github.com/kucera-lukas/micro-backends/backend-service/pkg/infrastructure/rabbitmq"
 )
 
-func (r *mutationResolver) NewMessage(ctx context.Context, input gqlgen.NewMessageInput) (*gqlgen.NewMessagePayload, error) {
+func (r *mutationResolver) NewMessage(
+	ctx context.Context,
+	input gqlgen.NewMessageInput,
+) (*gqlgen.NewMessagePayload, error) {
 	status, err := r.controller.Message.Create(
 		ctx,
 		input.Data,
 		input.Providers...,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("new_message: %w", err)
 	}
 
 	return &gqlgen.NewMessagePayload{
@@ -30,10 +33,14 @@ func (r *mutationResolver) NewMessage(ctx context.Context, input gqlgen.NewMessa
 	}, nil
 }
 
-func (r *queryResolver) Message(ctx context.Context, id string, provider gqlgen.MessageProvider) (*gqlgen.MessagePayload, error) {
+func (r *queryResolver) Message(
+	ctx context.Context,
+	id string,
+	provider gqlgen.MessageProvider,
+) (*gqlgen.MessagePayload, error) {
 	message, err := r.controller.Message.Get(ctx, id, provider)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("message: %w", err)
 	}
 
 	return &gqlgen.MessagePayload{
@@ -42,7 +49,12 @@ func (r *queryResolver) Message(ctx context.Context, id string, provider gqlgen.
 	}, nil
 }
 
-func (r *queryResolver) Messages(ctx context.Context, providers []gqlgen.MessageProvider, sortField gqlgen.MessageSortField, reverse bool) (*gqlgen.MessagesPayload, error) {
+func (r *queryResolver) Messages(
+	ctx context.Context,
+	providers []gqlgen.MessageProvider,
+	sortField gqlgen.MessageSortField,
+	reverse bool,
+) (*gqlgen.MessagesPayload, error) {
 	messages, err := r.controller.Message.List(
 		ctx,
 		sortField,
@@ -50,19 +62,22 @@ func (r *queryResolver) Messages(ctx context.Context, providers []gqlgen.Message
 		providers...,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("messages: %w", err)
 	}
 
 	return &gqlgen.MessagesPayload{
 		Messages:  messages,
 		Providers: providers,
-	}, err
+	}, nil
 }
 
-func (r *queryResolver) MessageCount(ctx context.Context, providers []gqlgen.MessageProvider) (*gqlgen.MessageCountPayload, error) {
+func (r *queryResolver) MessageCount(
+	ctx context.Context,
+	providers []gqlgen.MessageProvider,
+) (*gqlgen.MessageCountPayload, error) {
 	count, err := r.controller.Message.Count(ctx, providers...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("message_count: %w", err)
 	}
 
 	return &gqlgen.MessageCountPayload{
@@ -71,7 +86,9 @@ func (r *queryResolver) MessageCount(ctx context.Context, providers []gqlgen.Mes
 	}, nil
 }
 
-func (r *subscriptionResolver) MessageCreated(ctx context.Context) (<-chan *gqlgen.MessageCreatedPayload, error) {
+func (r *subscriptionResolver) MessageCreated(
+	ctx context.Context,
+) (<-chan *gqlgen.MessageCreatedPayload, error) {
 	messages := make(chan *gqlgen.MessageCreatedPayload, 1)
 
 	if err := r.rabbitmqClient.Consumer.Consume(

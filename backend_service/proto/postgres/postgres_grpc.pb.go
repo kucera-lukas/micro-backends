@@ -8,7 +8,6 @@ package pbpostgres
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -85,20 +84,18 @@ type MessageServiceServer interface {
 }
 
 // UnimplementedMessageServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedMessageServiceServer struct{}
+type UnimplementedMessageServiceServer struct {
+}
 
 func (UnimplementedMessageServiceServer) NewMessage(context.Context, *NewMessageRequest) (*NewMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewMessage not implemented")
 }
-
 func (UnimplementedMessageServiceServer) MessageCount(context.Context, *MessageCountRequest) (*MessageCountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MessageCount not implemented")
 }
-
 func (UnimplementedMessageServiceServer) GetMessage(context.Context, *GetMessageRequest) (*GetMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessage not implemented")
 }
-
 func (UnimplementedMessageServiceServer) GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
 }

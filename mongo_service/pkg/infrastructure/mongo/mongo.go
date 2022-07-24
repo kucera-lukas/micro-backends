@@ -24,7 +24,7 @@ func MustNew(config *env.Config) *mongo.Client {
 
 // New tries to create a new mongo.Client, returning error if unsuccessful.
 func New(ctx context.Context, config *env.Config) (*mongo.Client, error) {
-	credential := options.Credential{
+	credential := options.Credential{ // nolint:exhaustivestruct
 		Username: config.MongoDBUsername,
 		Password: config.MongoDBPassword,
 	}

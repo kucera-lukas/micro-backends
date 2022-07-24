@@ -7,12 +7,11 @@
 package pbmongo
 
 import (
-	reflect "reflect"
-	sync "sync"
-
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	reflect "reflect"
+	sync "sync"
 )
 
 const (
@@ -507,21 +506,18 @@ func file_mongo_proto_rawDescGZIP() []byte {
 	return file_mongo_proto_rawDescData
 }
 
-var (
-	file_mongo_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
-	file_mongo_proto_goTypes  = []interface{}{
-		(*NewMessageRequest)(nil),     // 0: pbmongo.NewMessageRequest
-		(*NewMessageResponse)(nil),    // 1: pbmongo.NewMessageResponse
-		(*MessageCountRequest)(nil),   // 2: pbmongo.MessageCountRequest
-		(*MessageCountResponse)(nil),  // 3: pbmongo.MessageCountResponse
-		(*GetMessageRequest)(nil),     // 4: pbmongo.GetMessageRequest
-		(*GetMessageResponse)(nil),    // 5: pbmongo.GetMessageResponse
-		(*GetMessagesRequest)(nil),    // 6: pbmongo.GetMessagesRequest
-		(*GetMessagesResponse)(nil),   // 7: pbmongo.GetMessagesResponse
-		(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
-	}
-)
-
+var file_mongo_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_mongo_proto_goTypes = []interface{}{
+	(*NewMessageRequest)(nil),     // 0: pbmongo.NewMessageRequest
+	(*NewMessageResponse)(nil),    // 1: pbmongo.NewMessageResponse
+	(*MessageCountRequest)(nil),   // 2: pbmongo.MessageCountRequest
+	(*MessageCountResponse)(nil),  // 3: pbmongo.MessageCountResponse
+	(*GetMessageRequest)(nil),     // 4: pbmongo.GetMessageRequest
+	(*GetMessageResponse)(nil),    // 5: pbmongo.GetMessageResponse
+	(*GetMessagesRequest)(nil),    // 6: pbmongo.GetMessagesRequest
+	(*GetMessagesResponse)(nil),   // 7: pbmongo.GetMessagesResponse
+	(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
+}
 var file_mongo_proto_depIdxs = []int32{
 	8, // 0: pbmongo.NewMessageResponse.created:type_name -> google.protobuf.Timestamp
 	8, // 1: pbmongo.NewMessageResponse.modified:type_name -> google.protobuf.Timestamp
