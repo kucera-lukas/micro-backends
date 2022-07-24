@@ -521,7 +521,6 @@ var (
 		(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
 	}
 )
-
 var file_mongo_proto_depIdxs = []int32{
 	8, // 0: pbmongo.NewMessageResponse.created:type_name -> google.protobuf.Timestamp
 	8, // 1: pbmongo.NewMessageResponse.modified:type_name -> google.protobuf.Timestamp

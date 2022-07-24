@@ -2,12 +2,6 @@ ci:
   skip: [make-fmt]
 
 repos:
-  #  - repo: https://github.com/golangci/golangci-lint
-  #    rev: v1.47.2
-  #    hooks:
-  #      - id: golangci-lint
-  #        entry: golangci-lint run 'backend_service/...' 'mongo_service/...' 'postgres_service/...' --fix --config ./.golang-ci.lint.yml
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.3.0
     hooks:

@@ -8,7 +8,6 @@ package pbmongo
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -85,20 +84,18 @@ type MessageServiceServer interface {
 }
 
 // UnimplementedMessageServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedMessageServiceServer struct{}
+type UnimplementedMessageServiceServer struct {
+}
 
 func (UnimplementedMessageServiceServer) NewMessage(context.Context, *NewMessageRequest) (*NewMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewMessage not implemented")
 }
-
 func (UnimplementedMessageServiceServer) MessageCount(context.Context, *MessageCountRequest) (*MessageCountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MessageCount not implemented")
 }
-
 func (UnimplementedMessageServiceServer) GetMessage(context.Context, *GetMessageRequest) (*GetMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessage not implemented")
 }
-
 func (UnimplementedMessageServiceServer) GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
 }
@@ -115,9 +112,7 @@ func RegisterMessageServiceServer(s grpc.ServiceRegistrar, srv MessageServiceSer
 	s.RegisterService(&MessageService_ServiceDesc, srv)
 }
 
-func _MessageService_NewMessage_Handler(srv interface{}, ctx context.Context,
-	dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor,
-) (interface{}, error) {
+func _MessageService_NewMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NewMessageRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -135,9 +130,7 @@ func _MessageService_NewMessage_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MessageService_MessageCount_Handler(srv interface{}, ctx context.Context,
-	dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor,
-) (interface{}, error) {
+func _MessageService_MessageCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MessageCountRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -155,9 +148,7 @@ func _MessageService_MessageCount_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MessageService_GetMessage_Handler(srv interface{}, ctx context.Context,
-	dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor,
-) (interface{}, error) {
+func _MessageService_GetMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetMessageRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -175,9 +166,7 @@ func _MessageService_GetMessage_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MessageService_GetMessages_Handler(srv interface{}, ctx context.Context,
-	dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor,
-) (interface{}, error) {
+func _MessageService_GetMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetMessagesRequest)
 	if err := dec(in); err != nil {
 		return nil, err

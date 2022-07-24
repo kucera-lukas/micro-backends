@@ -20,6 +20,8 @@ linters:
     - interfacer
     # deprecated (since v1.38.0)
     - maligned
+    # deprecated (since v1.46.0)
+    - exhaustivestruct
     # irrelevant
     - goerr113
     # using goimports-reviser

@@ -523,7 +523,6 @@ var (
 		(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
 	}
 )
-
 var file_postgres_proto_depIdxs = []int32{
 	8, // 0: pbpostgres.NewMessageResponse.created:type_name -> google.protobuf.Timestamp
 	8, // 1: pbpostgres.NewMessageResponse.modified:type_name -> google.protobuf.Timestamp
