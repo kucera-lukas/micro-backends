@@ -33,7 +33,7 @@ GO_FILES := $(shell \
 	find . '(' -path '*/.*' -o -path './vendor' ')' -prune \
 	-o -name '*.go' -print | cut -b3-)
 
-.PHONY: fmt lint tidy test gen-backend gen-mongo gen-postgres gen dev-build clean help
+.PHONY: fmt lint tidy test gen-backend gen-mongo gen-postgres gen build dev dev-build clean help
 
 default: help
 
@@ -93,13 +93,17 @@ gen:  ## Generate files for all services.
 	@make gen-mongo
 	@make gen-postgres
 
+build:  ## Build development server.
+	@echo "building docker compose network"
+	@docker compose build
+
 dev:  ## Start development server.
 	@echo "starting docker compose network"
-	@docker-compose up -d
+	@docker compose up -d
 
 dev-build:  ## Build and start development server.
-	@echo "building docker compose network"
-	@docker-compose up --build -d
+	@make build
+	@make dev
 
 clean:  ## Cleanup binary files.
 	@echo "cleaning up 'bin'"
