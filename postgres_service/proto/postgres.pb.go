@@ -509,20 +509,18 @@ func file_postgres_proto_rawDescGZIP() []byte {
 	return file_postgres_proto_rawDescData
 }
 
-var (
-	file_postgres_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
-	file_postgres_proto_goTypes  = []interface{}{
-		(*NewMessageRequest)(nil),     // 0: pbpostgres.NewMessageRequest
-		(*NewMessageResponse)(nil),    // 1: pbpostgres.NewMessageResponse
-		(*MessageCountRequest)(nil),   // 2: pbpostgres.MessageCountRequest
-		(*MessageCountResponse)(nil),  // 3: pbpostgres.MessageCountResponse
-		(*GetMessageRequest)(nil),     // 4: pbpostgres.GetMessageRequest
-		(*GetMessageResponse)(nil),    // 5: pbpostgres.GetMessageResponse
-		(*GetMessagesRequest)(nil),    // 6: pbpostgres.GetMessagesRequest
-		(*GetMessagesResponse)(nil),   // 7: pbpostgres.GetMessagesResponse
-		(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
-	}
-)
+var file_postgres_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_postgres_proto_goTypes = []interface{}{
+	(*NewMessageRequest)(nil),     // 0: pbpostgres.NewMessageRequest
+	(*NewMessageResponse)(nil),    // 1: pbpostgres.NewMessageResponse
+	(*MessageCountRequest)(nil),   // 2: pbpostgres.MessageCountRequest
+	(*MessageCountResponse)(nil),  // 3: pbpostgres.MessageCountResponse
+	(*GetMessageRequest)(nil),     // 4: pbpostgres.GetMessageRequest
+	(*GetMessageResponse)(nil),    // 5: pbpostgres.GetMessageResponse
+	(*GetMessagesRequest)(nil),    // 6: pbpostgres.GetMessagesRequest
+	(*GetMessagesResponse)(nil),   // 7: pbpostgres.GetMessagesResponse
+	(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
+}
 var file_postgres_proto_depIdxs = []int32{
 	8, // 0: pbpostgres.NewMessageResponse.created:type_name -> google.protobuf.Timestamp
 	8, // 1: pbpostgres.NewMessageResponse.modified:type_name -> google.protobuf.Timestamp

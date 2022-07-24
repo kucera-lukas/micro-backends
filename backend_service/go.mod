@@ -9,8 +9,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.3.4
 	github.com/rs/cors v1.8.2
 	github.com/spf13/viper v1.12.0
-	github.com/vektah/gqlparser/v2 v2.4.6
-	google.golang.org/grpc v1.46.2
+	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
 )
 
@@ -41,6 +40,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.3.0 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
+	github.com/vektah/gqlparser/v2 v2.4.6 // indirect
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
 	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect

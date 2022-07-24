@@ -8,9 +8,10 @@ import (
 	"fmt"
 	"strings"
 
+	amqp091 "github.com/rabbitmq/amqp091-go"
+
 	"github.com/kucera-lukas/micro-backends/backend-service/gqlgen"
 	"github.com/kucera-lukas/micro-backends/backend-service/pkg/infrastructure/rabbitmq"
-	amqp091 "github.com/rabbitmq/amqp091-go"
 )
 
 func (r *mutationResolver) NewMessage(

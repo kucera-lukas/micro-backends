@@ -16,6 +16,8 @@ func (r *Resolver) Query() gqlgen.QueryResolver { return &queryResolver{r} }
 // Subscription returns gqlgen.SubscriptionResolver implementation.
 func (r *Resolver) Subscription() gqlgen.SubscriptionResolver { return &subscriptionResolver{r} }
 
-type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }
-type subscriptionResolver struct{ *Resolver }
+type (
+	mutationResolver     struct{ *Resolver }
+	queryResolver        struct{ *Resolver }
+	subscriptionResolver struct{ *Resolver }
+)

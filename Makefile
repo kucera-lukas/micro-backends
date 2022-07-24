@@ -39,12 +39,15 @@ default: help
 
 fmt: $(GOLINES) $(GOFUMPT) $(GOIMPORTS)  ## Format source files.
 	@echo "formatting via golines"
-	@$(GOLINES) --max-len=80 -w $(MODULE_DIRS)
-	@echo "formatting via gofumpt and goimports-reviser"
+	@$(GOLINES) --max-len=80 -w .
+	@echo "formatting via gofumpt"
+	@$(GOFUMPT) -e -w -extra .
+	@echo "formating via goimports-reviser"
 	@$(foreach file,$(GO_FILES),( \
-		echo "fmt $(file)" && \
-		$(GOFUMPT) -e -w -extra $(file) && \
-		$(GOIMPORTS) -project-name github.com/kucera-lukas/micro-backends -file-path $(file)) && \
+		$(GOIMPORTS) \
+			-project-name github.com/kucera-lukas/micro-backends \
+			-file-path $(file) \
+		  ) && \
 		) true
 
 lint: $(GOLANGCI_LINT)  ## Lint source files.
