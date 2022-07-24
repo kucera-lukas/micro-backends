@@ -16,25 +16,25 @@ jobs:
         with:
           go-version: "1.18"
 
-      - name: golangci-lint
+      - name: Lint backend_service
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
           working-directory: backend_service
 
-      - name: golangci-lint
+      - name: Lint mongo_service
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
           working-directory: mongo_service
 
-      - name: golangci-lint
+      - name: Lint postgres_service
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
           working-directory: postgres_service
 
-      - name: Make fmt
+      - name: Format Go files
         run: make fmt
 
       - name: Exit If Git Diff
