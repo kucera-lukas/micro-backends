@@ -7,14 +7,18 @@ jobs:
     name: format
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        go: [1.18]
+
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Go
+      - name: Setup Go ${{ matrix.go }}
         uses: actions/setup-go@v3
         with:
-          go-version: "1.18"
+          go-version: ${{ matrix.go }}
 
       - name: Format Go files
         run: make fmt
@@ -30,11 +34,17 @@ jobs:
 
     strategy:
       matrix:
+        go: [1.18]
         workdir: [backend_service, mongo_service, postgres_service]
 
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
+
+      - name: Setup  ${{ matrix.go }}
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
 
       - name: Lint ${{ matrix.workdir }}
         uses: golangci/golangci-lint-action@v3
