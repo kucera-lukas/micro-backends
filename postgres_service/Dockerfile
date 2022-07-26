@@ -1,23 +1,15 @@
-FROM golang:latest as builder
+FROM golang:1.18 as runner
 
-WORKDIR /build
+WORKDIR /app
 
 COPY go.mod ./
 COPY go.sum ./
 
 RUN go mod download
+RUN go install github.com/cosmtrek/air@latest
 
 COPY . ./
-
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags="-w -s" -v -o postgres cmd/postgres/postgres.go
-
-FROM alpine:latest
-
-WORKDIR /app
-
-COPY --from=builder /build/postgres ./postgres
 COPY .env .
 
 EXPOSE 80
-ENTRYPOINT ["./postgres"]
+ENTRYPOINT ["/go/bin/air"]

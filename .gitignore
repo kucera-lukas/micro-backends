@@ -33,6 +33,7 @@ cover.out
 .tool-versions
 
 bin
+tmp
 
 # Logs
 logs
