@@ -25,3 +25,4 @@ repos:
     hooks:
       - id: prettier
         files: \.(js|ts|jsx|tsx|css|less|html|json|markdown|md|yaml|yml)$
+        entry: prettier --write --list-different --config web/.prettierrc

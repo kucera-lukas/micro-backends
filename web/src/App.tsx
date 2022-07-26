@@ -1,5 +1,7 @@
-import { useState } from "react";
 import reactLogo from "./assets/react.svg";
+
+import { useState } from "react";
+
 import "./App.css";
 
 function App() {
@@ -11,6 +13,7 @@ function App() {
         <a
           href="https://vitejs.dev"
           target="_blank"
+          rel="noreferrer"
         >
           <img
             src="/web/public/vite.svg"
@@ -21,6 +24,7 @@ function App() {
         <a
           href="https://reactjs.org"
           target="_blank"
+          rel="noreferrer"
         >
           <img
             src={reactLogo}

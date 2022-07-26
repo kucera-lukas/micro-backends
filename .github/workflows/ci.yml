@@ -3,12 +3,13 @@ name: Continuous Integration
 on: [push]
 
 jobs:
-  format:
-    name: format
-    runs-on: ubuntu-latest
+  format-go:
+    name: format-go
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
+        os: [ubuntu-latest]
         go: [1.18]
 
     steps:
@@ -28,12 +29,13 @@ jobs:
           chmod +x ./scripts/exit_if_diff.sh
           ./scripts/exit_if_diff.sh
 
-  lint:
-    name: lint
-    runs-on: ubuntu-latest
+  golangci-lint:
+    name: golangci-lint
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
+        os: [ubuntu-latest]
         go: [1.18]
         workdir: [backend_service, mongo_service, postgres_service]
 
@@ -41,7 +43,7 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v3
 
-      - name: Setup  ${{ matrix.go }}
+      - name: Setup ${{ matrix.go }}
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
@@ -51,3 +53,36 @@ jobs:
         with:
           version: latest
           working-directory: ${{ matrix.workdir }}
+
+  web:
+    name: client
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [18]
+
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Prettier
+        run: npm run fmt:check
+
+      - name: ESLint
+        run: npm run lint:fix
