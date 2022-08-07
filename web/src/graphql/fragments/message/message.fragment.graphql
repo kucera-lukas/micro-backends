@@ -1,6 +1,6 @@
 fragment MessageFragment on Message {
-    id
-    data
-    created
-    modified
+  id
+  data
+  created
+  modified
 }

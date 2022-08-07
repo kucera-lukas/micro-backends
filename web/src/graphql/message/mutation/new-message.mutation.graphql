@@ -1,6 +1,6 @@
 mutation newMessage($providers: [MessageProvider!]!, $data: String!) {
-    newMessage(input: {providers: $providers, data: $data}) {
-        status
-        providers
-    }
+  newMessage(input: { providers: $providers, data: $data }) {
+    status
+    providers
+  }
 }

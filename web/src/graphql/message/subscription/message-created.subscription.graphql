@@ -1,8 +1,8 @@
 subscription messageCreated {
-    messageCreated {
-        message {
-            ...MessageFragment
-        }
-        provider
+  messageCreated {
+    message {
+      ...MessageFragment
     }
+    provider
+  }
 }

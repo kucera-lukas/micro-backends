@@ -1,8 +1,8 @@
 query message($id: String!, $provider: MessageProvider!) {
-    message(id: $id, provider: $provider) {
-        message {
-            ...MessageFragment
-        }
-        provider
+  message(id: $id, provider: $provider) {
+    message {
+      ...MessageFragment
     }
+    provider
+  }
 }
