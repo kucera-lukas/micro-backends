@@ -42,18 +42,8 @@
         ]
       }
     ],
-    "unicorn/prevent-abbreviations": [
-      "error",
-      {
-        "replacements": {
-          "args": false,
-          "docs": false,
-          "env": false,
-          "props": false,
-          "ref": false
-        }
-      }
-    ],
+    "unicorn/prevent-abbreviations": "off",
+    "unicorn/no-keyword-prefix": "off",
     "react/react-in-jsx-scope": "off",
     "@typescript-eslint/consistent-type-imports": "error",
     "@typescript-eslint/no-unused-vars": "error",
