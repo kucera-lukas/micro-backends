@@ -23,52 +23,52 @@ export type Scalars = {
 };
 
 export type Message = {
-  __typename?: "Message";
-  created: Scalars["Time"];
-  data: Scalars["String"];
-  id: Scalars["String"];
-  modified: Scalars["Time"];
+  __typename?: `Message`;
+  created: Scalars[`Time`];
+  data: Scalars[`String`];
+  id: Scalars[`String`];
+  modified: Scalars[`Time`];
 };
 
 export type MessageCountPayload = {
-  __typename?: "MessageCountPayload";
-  count: Scalars["Int"];
+  __typename?: `MessageCountPayload`;
+  count: Scalars[`Int`];
   providers: Array<MessageProvider>;
 };
 
 export type MessageCreatedPayload = {
-  __typename?: "MessageCreatedPayload";
+  __typename?: `MessageCreatedPayload`;
   message: Message;
   provider: MessageProvider;
 };
 
 export type MessagePayload = {
-  __typename?: "MessagePayload";
+  __typename?: `MessagePayload`;
   message: Message;
   provider: MessageProvider;
 };
 
 export enum MessageProvider {
-  Mongo = "MONGO",
-  Postgres = "POSTGRES",
+  Mongo = `MONGO`,
+  Postgres = `POSTGRES`,
 }
 
 export enum MessageSortField {
-  Created = "CREATED",
-  Data = "DATA",
-  Id = "ID",
-  Modified = "MODIFIED",
+  Created = `CREATED`,
+  Data = `DATA`,
+  Id = `ID`,
+  Modified = `MODIFIED`,
 }
 
 export type MessagesPayload = {
-  __typename?: "MessagesPayload";
+  __typename?: `MessagesPayload`;
   messages: Array<Message>;
   providers: Array<MessageProvider>;
 };
 
 /** The `Mutation` type, represents all updates we can make to our data. */
 export type Mutation = {
-  __typename?: "Mutation";
+  __typename?: `Mutation`;
   newMessage: NewMessagePayload;
 };
 
@@ -78,19 +78,19 @@ export type MutationNewMessageArgs = {
 };
 
 export type NewMessageInput = {
-  data: Scalars["String"];
+  data: Scalars[`String`];
   providers: Array<MessageProvider>;
 };
 
 export type NewMessagePayload = {
-  __typename?: "NewMessagePayload";
+  __typename?: `NewMessagePayload`;
   providers: Array<MessageProvider>;
-  status: Scalars["String"];
+  status: Scalars[`String`];
 };
 
 /** The `Query` type, represents all of the entry points into our object graph. */
 export type Query = {
-  __typename?: "Query";
+  __typename?: `Query`;
   message: MessagePayload;
   messageCount: MessageCountPayload;
   messages: MessagesPayload;
@@ -98,7 +98,7 @@ export type Query = {
 
 /** The `Query` type, represents all of the entry points into our object graph. */
 export type QueryMessageArgs = {
-  id: Scalars["String"];
+  id: Scalars[`String`];
   provider: MessageProvider;
 };
 
@@ -110,18 +110,18 @@ export type QueryMessageCountArgs = {
 /** The `Query` type, represents all of the entry points into our object graph. */
 export type QueryMessagesArgs = {
   providers: Array<MessageProvider>;
-  reverse?: Scalars["Boolean"];
+  reverse?: Scalars[`Boolean`];
   sortField?: MessageSortField;
 };
 
 /** The `Subscription` type, represents all ways to subscribe to updates to our graph. */
 export type Subscription = {
-  __typename?: "Subscription";
+  __typename?: `Subscription`;
   messageCreated: MessageCreatedPayload;
 };
 
 export type MessageFragmentFragment = {
-  __typename?: "Message";
+  __typename?: `Message`;
   id: string;
   data: string;
   created: Date;
@@ -130,13 +130,13 @@ export type MessageFragmentFragment = {
 
 export type NewMessageMutationVariables = Exact<{
   providers: Array<MessageProvider> | MessageProvider;
-  data: Scalars["String"];
+  data: Scalars[`String`];
 }>;
 
 export type NewMessageMutation = {
-  __typename?: "Mutation";
+  __typename?: `Mutation`;
   newMessage: {
-    __typename?: "NewMessagePayload";
+    __typename?: `NewMessagePayload`;
     status: string;
     providers: Array<MessageProvider>;
   };
@@ -147,26 +147,26 @@ export type MessageCountQueryVariables = Exact<{
 }>;
 
 export type MessageCountQuery = {
-  __typename?: "Query";
+  __typename?: `Query`;
   messageCount: {
-    __typename?: "MessageCountPayload";
+    __typename?: `MessageCountPayload`;
     count: number;
     providers: Array<MessageProvider>;
   };
 };
 
 export type MessageQueryVariables = Exact<{
-  id: Scalars["String"];
+  id: Scalars[`String`];
   provider: MessageProvider;
 }>;
 
 export type MessageQuery = {
-  __typename?: "Query";
+  __typename?: `Query`;
   message: {
-    __typename?: "MessagePayload";
+    __typename?: `MessagePayload`;
     provider: MessageProvider;
     message: {
-      __typename?: "Message";
+      __typename?: `Message`;
       id: string;
       data: string;
       created: Date;
@@ -178,16 +178,16 @@ export type MessageQuery = {
 export type MessagesQueryVariables = Exact<{
   providers: Array<MessageProvider> | MessageProvider;
   sortField?: MessageSortField;
-  reverse?: Scalars["Boolean"];
+  reverse?: Scalars[`Boolean`];
 }>;
 
 export type MessagesQuery = {
-  __typename?: "Query";
+  __typename?: `Query`;
   messages: {
-    __typename?: "MessagesPayload";
+    __typename?: `MessagesPayload`;
     providers: Array<MessageProvider>;
     messages: Array<{
-      __typename?: "Message";
+      __typename?: `Message`;
       id: string;
       data: string;
       created: Date;
@@ -201,12 +201,12 @@ export type MessageCreatedSubscriptionVariables = Exact<{
 }>;
 
 export type MessageCreatedSubscription = {
-  __typename?: "Subscription";
+  __typename?: `Subscription`;
   messageCreated: {
-    __typename?: "MessageCreatedPayload";
+    __typename?: `MessageCreatedPayload`;
     provider: MessageProvider;
     message: {
-      __typename?: "Message";
+      __typename?: `Message`;
       id: string;
       data: string;
       created: Date;
