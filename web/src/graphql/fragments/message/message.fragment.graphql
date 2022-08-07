@@ -1,0 +1,6 @@
+fragment MessageFragment on Message {
+    id
+    data
+    created
+    modified
+}

@@ -1,0 +1,17 @@
+query messages(
+    $providers: [MessageProvider!]!,
+    $sortField: MessageSortField! = CREATED
+    $reverse: Boolean! = true,
+) {
+    messages(
+        providers: $providers,
+        sortField: $sortField,
+        reverse: $reverse,
+    ) {
+        messages {
+            ...MessageFragment
+
+        }
+        providers
+    }
+}

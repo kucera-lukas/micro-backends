@@ -1,12 +1,14 @@
-import App from "./App";
+import App from "./app";
+import GraphqlProvider from "./providers/graphql.provider";
 
-import React from "react";
-import ReactDOM from "react-dom/client";
+import * as ReactDOM from "react-dom/client";
 
-import "./index.css";
+const root = ReactDOM.createRoot(
+  document.querySelector(`#root`) as HTMLElement,
+);
 
-ReactDOM.createRoot(document.querySelector(`#root`) as HTMLElement).render(
-  <React.StrictMode>
+root.render(
+  <GraphqlProvider>
     <App />
-  </React.StrictMode>,
+  </GraphqlProvider>,
 );

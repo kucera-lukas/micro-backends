@@ -1,0 +1,26 @@
+overwrite: true
+schema: http://localhost:8080/graphql
+documents: src/graphql/**/*.graphql
+generates:
+  src/graphql/generated/codegen.generated.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      strictScalars: true
+      skipTypenames: true
+      useTypeImports: true
+      documentVariableSuffix: Document
+      fragmentVariableSuffix: FragmentDocument
+      scalars:
+        Cursor: string
+        Time: Date
+  src/graphql/generated/introspection-schema.generated.json:
+    plugins:
+      - introspection
+    config:
+      minify: true
+hooks:
+  afterAllFileWrite:
+    - prettier --write

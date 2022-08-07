@@ -1,0 +1,6 @@
+query messageCount($providers: [MessageProvider!]!) {
+    messageCount(providers: $providers) {
+        count
+        providers
+    }
+}
