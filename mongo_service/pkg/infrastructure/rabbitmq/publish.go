@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/rabbitmq/amqp091-go"
@@ -23,7 +24,11 @@ func NewPublisher(conn *amqp091.Connection) (*Publisher, error) {
 }
 
 // Publish a message to the AMQP exchange.
-func (p *Publisher) Publish(body string, headers amqp091.Table) error {
+func (p *Publisher) Publish(
+	ctx context.Context,
+	body string,
+	headers amqp091.Table,
+) error {
 	channel, err := p.conn.Channel()
 	if err != nil {
 		return fmt.Errorf("publish: failed to open channel: %w", err)
@@ -31,7 +36,8 @@ func (p *Publisher) Publish(body string, headers amqp091.Table) error {
 
 	defer closeChannel(channel)
 
-	if err := channel.Publish(
+	if err := channel.PublishWithContext(
+		ctx,
 		ExchangeName,
 		"",    // 'headers' exchange ignores the routing key
 		false, // mandatory
