@@ -1,4 +1,10 @@
 repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v14.0.6
+    hooks:
+      - id: clang-format
+        files: \.(proto)$
+
   - repo: https://github.com/segmentio/golines
     rev: v0.10.0
     hooks:
