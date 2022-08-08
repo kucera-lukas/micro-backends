@@ -153,6 +153,7 @@ func (r *messageRepository) NewMessage(
 	}
 
 	if err := r.rabbitmqClient.Publisher.Publish(
+		ctx,
 		fmt.Sprintf(`
 {
     "message": {
