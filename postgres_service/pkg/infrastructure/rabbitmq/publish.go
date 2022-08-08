@@ -6,7 +6,7 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
-// Publisher for publishing AMQP events
+// Publisher for publishing AMQP events.
 type Publisher struct {
 	conn *amqp091.Connection
 }
@@ -15,8 +15,7 @@ type Publisher struct {
 func NewPublisher(conn *amqp091.Connection) (*Publisher, error) {
 	publisher := &Publisher{conn: conn}
 
-	err := publisher.setup()
-	if err != nil {
+	if err := publisher.setup(); err != nil {
 		return nil, err
 	}
 
@@ -37,7 +36,7 @@ func (p *Publisher) Publish(body string, headers amqp091.Table) error {
 		"",    // 'headers' exchange ignores the routing key
 		false, // mandatory
 		false, // immediate
-		amqp091.Publishing{
+		amqp091.Publishing{ // nolint:exhaustivestruct
 			ContentType: "application/json",
 			Body:        []byte(body),
 			Headers:     headers,

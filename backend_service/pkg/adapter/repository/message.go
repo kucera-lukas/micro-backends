@@ -14,16 +14,16 @@ import (
 	"github.com/kucera-lukas/micro-backends/backend-service/gqlgen"
 	"github.com/kucera-lukas/micro-backends/backend-service/pkg/adapter/controller"
 	"github.com/kucera-lukas/micro-backends/backend-service/pkg/infrastructure/rabbitmq"
-	"github.com/kucera-lukas/micro-backends/backend-service/proto/mongo"
-	"github.com/kucera-lukas/micro-backends/backend-service/proto/postgres"
+	pbmongo "github.com/kucera-lukas/micro-backends/backend-service/proto/mongo"
+	pbpostgres "github.com/kucera-lukas/micro-backends/backend-service/proto/postgres"
 )
 
 // NewMessageRepository returns implementation of the controller.Message interface.
-func NewMessageRepository(
+func NewMessageRepository( // nolint:ireturn
 	mongoClient pbmongo.MessageServiceClient,
 	postgresClient pbpostgres.MessageServiceClient,
 	rabbitmqClient *rabbitmq.Client,
-) controller.Message { //nolint:ireturn
+) controller.Message {
 	return &messageRepository{
 		mongoClient:    mongoClient,
 		postgresClient: postgresClient,
@@ -46,7 +46,7 @@ type messageGetter interface {
 
 func (m messageRepository) Get(
 	ctx context.Context,
-	id string,
+	messageID string,
 	provider gqlgen.MessageProvider,
 ) (message *gqlgen.Message, err error) {
 	var response messageGetter
@@ -54,17 +54,17 @@ func (m messageRepository) Get(
 	if provider == gqlgen.MessageProviderMongo {
 		response, err = m.mongoClient.GetMessage(
 			ctx,
-			&pbmongo.GetMessageRequest{Id: id},
+			&pbmongo.GetMessageRequest{Id: messageID},
 		)
 	} else {
 		response, err = m.postgresClient.GetMessage(
 			ctx,
-			&pbpostgres.GetMessageRequest{Id: id},
+			&pbpostgres.GetMessageRequest{Id: messageID},
 		)
 	}
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get: %w", err)
 	}
 
 	return &gqlgen.Message{
@@ -88,7 +88,7 @@ func (m messageRepository) List(
 				&pbmongo.GetMessagesRequest{},
 			)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("list: %w", err)
 			}
 
 			for _, message := range response.GetMessages() {
@@ -105,7 +105,7 @@ func (m messageRepository) List(
 				&pbpostgres.GetMessagesRequest{},
 			)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("list: %w", err)
 			}
 
 			for _, message := range response.GetMessages() {
@@ -148,7 +148,7 @@ func (m messageRepository) Count(
 		}
 
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("count: %w", err)
 		}
 
 		count += response.GetCount()
@@ -179,7 +179,7 @@ func (m messageRepository) Create(
 		fmt.Sprintf(`{"data": %q}`, data),
 		table,
 	); err != nil {
-		return "", err
+		return "", fmt.Errorf("create: %w", err)
 	}
 
 	return "Queued, thanks <3", nil
@@ -196,10 +196,12 @@ func (m messageRepository) DeliverMessage(
 		if err := delivery.Nack(false, true); err != nil {
 			log.Printf("consume: failed to nack delivery: %v\n", err)
 		}
-		log.Printf("consume: failed unmarshal delivery body %s: %v\n",
+
+		log.Printf("consume: failed to unmarshal delivery body %s: %v\n",
 			delivery.Body,
 			err,
 		)
+
 		return
 	}
 
@@ -210,49 +212,55 @@ func (m messageRepository) DeliverMessage(
 	}
 }
 
-func getMessageSortFunc(
+func getMessageSortFunc( // nolint:cyclop
 	messages []*gqlgen.Message,
 	field gqlgen.MessageSortField,
 	reverse bool,
 ) func(i, j int) bool {
-	if field == gqlgen.MessageSortFieldID {
-		if reverse {
+	if reverse {
+		switch field {
+		case gqlgen.MessageSortFieldID:
 			return func(i, j int) bool {
 				return messages[i].ID > messages[j].ID
 			}
-		} else {
-			return func(i, j int) bool {
-				return messages[i].ID < messages[j].ID
-			}
-		}
-	} else if field == gqlgen.MessageSortFieldData {
-		if reverse {
+		case gqlgen.MessageSortFieldData:
 			return func(i, j int) bool {
 				return messages[i].Data > messages[j].Data
 			}
-		} else {
-			return func(i, j int) bool {
-				return messages[i].Data < messages[j].Data
-			}
-		}
-	} else if field == gqlgen.MessageSortFieldCreated {
-		if reverse {
+		case gqlgen.MessageSortFieldCreated:
 			return func(i, j int) bool {
 				return messages[i].Created.After(messages[j].Created)
 			}
-		} else {
-			return func(i, j int) bool {
-				return messages[i].Created.Before(messages[j].Created)
-			}
-		}
-	} else {
-		if reverse {
+		case gqlgen.MessageSortFieldModified:
 			return func(i, j int) bool {
 				return messages[i].Modified.After(messages[j].Modified)
 			}
-		} else {
+		default:
+			return func(i, j int) bool {
+				return messages[i].ID > messages[j].ID
+			}
+		}
+	} else {
+		switch field {
+		case gqlgen.MessageSortFieldID:
+			return func(i, j int) bool {
+				return messages[i].ID < messages[j].ID
+			}
+		case gqlgen.MessageSortFieldData:
+			return func(i, j int) bool {
+				return messages[i].Data < messages[j].Data
+			}
+		case gqlgen.MessageSortFieldCreated:
+			return func(i, j int) bool {
+				return messages[i].Created.Before(messages[j].Created)
+			}
+		case gqlgen.MessageSortFieldModified:
 			return func(i, j int) bool {
 				return messages[i].Modified.Before(messages[j].Modified)
+			}
+		default:
+			return func(i, j int) bool {
+				return messages[i].ID < messages[j].ID
 			}
 		}
 	}

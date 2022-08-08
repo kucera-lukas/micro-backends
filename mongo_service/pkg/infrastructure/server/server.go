@@ -18,7 +18,7 @@ import (
 	"github.com/kucera-lukas/micro-backends/mongo-service/pkg/infrastructure/env"
 	"github.com/kucera-lukas/micro-backends/mongo-service/pkg/infrastructure/mongo"
 	"github.com/kucera-lukas/micro-backends/mongo-service/pkg/infrastructure/rabbitmq"
-	"github.com/kucera-lukas/micro-backends/mongo-service/proto"
+	pbmongo "github.com/kucera-lukas/micro-backends/mongo-service/proto"
 )
 
 const (
@@ -38,7 +38,7 @@ func (s *Server) NewMessage(
 ) (*pbmongo.NewMessageResponse, error) {
 	message, err := s.controller.Message.Create(ctx, req.Data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("new_message: %w", err)
 	}
 
 	return &pbmongo.NewMessageResponse{
@@ -55,7 +55,7 @@ func (s *Server) MessageCount(
 ) (*pbmongo.MessageCountResponse, error) {
 	count, err := s.controller.Message.Count(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("message_count: %w", err)
 	}
 
 	return &pbmongo.MessageCountResponse{Count: count}, nil
@@ -67,7 +67,7 @@ func (s *Server) GetMessage(
 ) (*pbmongo.GetMessageResponse, error) {
 	message, err := s.controller.Message.Get(ctx, req.GetId())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get_message: %w", err)
 	}
 
 	return &pbmongo.GetMessageResponse{
@@ -84,18 +84,18 @@ func (s *Server) GetMessages(
 ) (*pbmongo.GetMessagesResponse, error) {
 	messageList, err := s.controller.Message.List(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get_messages: %w", err)
 	}
 
-	var messages []*pbmongo.GetMessageResponse
+	messages := make([]*pbmongo.GetMessageResponse, len(messageList))
 
-	for _, msg := range messageList {
-		messages = append(messages, &pbmongo.GetMessageResponse{
+	for i, msg := range messageList {
+		messages[i] = &pbmongo.GetMessageResponse{
 			Id:       msg.ID.Hex(),
 			Data:     msg.Data,
 			Created:  timestamppb.New(msg.Created),
 			Modified: timestamppb.New(msg.Modified),
-		})
+		}
 	}
 
 	return &pbmongo.GetMessagesResponse{Messages: messages}, nil
@@ -105,6 +105,7 @@ func (s *Server) GetMessages(
 func Run(config *env.Config) {
 	rabbitmqClient := rabbitmq.MustNew(config.RabbitMQURI)
 	defer rabbitmqClient.Close()
+
 	mongoClient := mongo.MustNew(config)
 	defer mongo.Disconnect(mongoClient)
 
@@ -116,10 +117,14 @@ func Run(config *env.Config) {
 	}
 
 	srv := grpc.NewServer()
-	pbmongo.RegisterMessageServiceServer(srv, &Server{controller: ctrl})
+	pbmongo.RegisterMessageServiceServer(
+		srv,
+		&Server{controller: ctrl}, // nolint:exhaustivestruct
+	)
 	reflection.Register(srv)
 
 	address := fmt.Sprintf("0.0.0.0:%d", config.Port)
+
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Printf(

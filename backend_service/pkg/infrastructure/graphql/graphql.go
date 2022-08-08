@@ -24,16 +24,16 @@ func NewServer(
 	controller controller.Controller,
 ) *handler.Server {
 	srv := handler.New(resolver.NewSchema(config, rabbitmqClient, controller))
-	srv.AddTransport(transport.Options{})
+	srv.AddTransport(transport.Options{}) // nolint:exhaustivestruct
 	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
-	srv.AddTransport(transport.Websocket{})
+	srv.AddTransport(transport.Websocket{}) // nolint:exhaustivestruct
 	srv.SetQueryCache(lru.New(lruQueryCacheSize))
 	srv.Use(extension.Introspection{})
 	srv.Use(extension.FixedComplexityLimit(complexityLimit))
-	//srv.SetRecoverFunc(func(ctx context.Context, err interface{}) error {
-	//	return util.NewInternalServerError(ctx, fmt.Sprintf(`%v`, err))
-	//})
+	// srv.SetRecoverFunc(func(ctx context.Context, err interface{}) error {
+	//     return util.NewInternalServerError(ctx, fmt.Sprintf(`%v`, err))
+	// })
 
 	return srv
 }

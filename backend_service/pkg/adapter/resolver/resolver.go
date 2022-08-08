@@ -21,7 +21,7 @@ type Resolver struct {
 }
 
 // NewSchema creates a new graphql.ExecutableSchema.
-func NewSchema( //nolint:ireturn
+func NewSchema(
 	config *env.Config,
 	rabbitmqClient *rabbitmq.Client,
 	controller controller.Controller,

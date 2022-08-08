@@ -7,6 +7,8 @@ services:
       - "8080:8080"
     env_file:
       - backend_service/.env
+    volumes:
+      - ./backend_service/:/app
     networks:
       - micro_backends
     depends_on:
@@ -22,6 +24,8 @@ services:
       - "8081:8081"
     env_file:
       - mongo_service/.env
+    volumes:
+      - ./mongo_service/:/app
     networks:
       - micro_backends
     depends_on:
@@ -38,6 +42,8 @@ services:
       - "8082:8082"
     env_file:
       - postgres_service/.env
+    volumes:
+      - ./postgres_service/:/app
     networks:
       - micro_backends
     depends_on:
@@ -109,6 +115,9 @@ services:
       - micro_backends
 
 volumes:
+  backend_service:
+  mongo_service:
+  postgres_service:
   rabbitmq:
   mongodb:
   postgres:

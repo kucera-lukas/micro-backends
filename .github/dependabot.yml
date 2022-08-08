@@ -6,6 +6,12 @@ updates:
     schedule:
       interval: daily
 
+  # Maintain dependencies for backend_service Go Module.
+  - package-ecosystem: gomod
+    directory: /backend_service
+    schedule:
+      interval: daily
+
   # Maintain dependencies for mongo_service Go Module.
   - package-ecosystem: gomod
     directory: /mongo_service
@@ -15,5 +21,11 @@ updates:
   # Maintain dependencies for postgres_service Go Module.
   - package-ecosystem: gomod
     directory: /postgres_service
+    schedule:
+      interval: daily
+
+  # Maintain dependencies for web.
+  - package-ecosystem: npm
+    directory: /web
     schedule:
       interval: daily

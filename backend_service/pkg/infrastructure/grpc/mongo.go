@@ -1,13 +1,16 @@
+// nolint:ireturn
 package grpc
 
 import (
 	"log"
 
 	"github.com/kucera-lukas/micro-backends/backend-service/pkg/infrastructure/env"
-	"github.com/kucera-lukas/micro-backends/backend-service/proto/mongo"
+	pbmongo "github.com/kucera-lukas/micro-backends/backend-service/proto/mongo"
 )
 
-func MustNewMongoClient(config *env.Config) pbmongo.MessageServiceClient {
+func MustNewMongoClient(
+	config *env.Config,
+) pbmongo.MessageServiceClient {
 	client, err := NewMongoClient(config)
 	if err != nil {
 		log.Panicf("grpc: failed to create mongo client: %v\n", err)
@@ -16,7 +19,9 @@ func MustNewMongoClient(config *env.Config) pbmongo.MessageServiceClient {
 	return client
 }
 
-func NewMongoClient(config *env.Config) (pbmongo.MessageServiceClient, error) {
+func NewMongoClient(
+	config *env.Config,
+) (pbmongo.MessageServiceClient, error) {
 	conn, err := dial(config.MongoServiceAddress)
 	if err != nil {
 		return nil, err

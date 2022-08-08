@@ -42,7 +42,8 @@ type ResolverRoot interface {
 	Subscription() SubscriptionResolver
 }
 
-type DirectiveRoot struct{}
+type DirectiveRoot struct {
+}
 
 type ComplexityRoot struct {
 	Message struct {
