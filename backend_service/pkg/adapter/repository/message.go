@@ -176,6 +176,7 @@ func (m messageRepository) Create(
 	}
 
 	if err := m.rabbitmqClient.Publisher.Publish(
+		ctx,
 		fmt.Sprintf(`{"data": %q}`, data),
 		table,
 	); err != nil {
