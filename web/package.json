@@ -15,10 +15,13 @@
   },
   "dependencies": {
     "@apollo/client": "^3.6.9",
+    "@mantine/core": "^5.1.0",
+    "@mantine/hooks": "^5.1.0",
     "graphql": "^16.6.0",
     "graphql-ws": "^5.9.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.3.0"
   },
   "devDependencies": {
     "@graphql-codegen/add": "^3.2.1",

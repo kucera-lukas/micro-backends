@@ -1,33 +1,12 @@
-import "./App.css";
-import {
-  MessageProvider,
-  useMessageQuery,
-} from "./graphql/generated/codegen.generated";
+import { MessageProvidersProvider } from "./context/providers.context";
+import Router from "./router/router";
 
-function App() {
-  const { data, loading, error } = useMessageQuery({
-    variables: {
-      id: `1`,
-      provider: MessageProvider.Postgres,
-    },
-  });
-
-  let content;
-  if (loading) {
-    content = <div>Loading...</div>;
-  } else if (error) {
-    content = <div>Error {error.message}</div>;
-  } else {
-    content = <div>{data?.message.message.data}</div>;
-  }
-
+const App = (): JSX.Element => {
   return (
-    <div>
-      <h2>Micro Backends 🚀</h2>
-      <div>{content}</div>
-      <div>{import.meta.env.DEV}</div>
-    </div>
+    <MessageProvidersProvider>
+      <Router />
+    </MessageProvidersProvider>
   );
-}
+};
 
 export default App;
