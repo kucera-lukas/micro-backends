@@ -3,13 +3,13 @@ module github.com/kucera-lukas/micro-backends/backend-service
 go 1.18
 
 require (
-	github.com/99designs/gqlgen v0.17.13
+	github.com/99designs/gqlgen v0.17.14
 	github.com/gin-gonic/gin v1.8.1
 	github.com/joho/godotenv v1.4.0
 	github.com/rabbitmq/amqp091-go v1.4.0
 	github.com/rs/cors v1.8.2
 	github.com/spf13/viper v1.12.0
-	github.com/vektah/gqlparser/v2 v2.4.7
+	github.com/vektah/gqlparser/v2 v2.4.8
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
 )
