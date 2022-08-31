@@ -1,14 +1,13 @@
-import { useProviders } from "../context/providers.context";
-import { MessageProvider } from "../graphql/generated/codegen.generated";
-import { capitalize } from "../utils/format.utils";
+import { data } from "./constants";
+import ProviderMultiSelectItem from "./item.component";
+import ProviderMultiSelectValue from "./value.component";
+
+import { useProviders } from "../../context/providers.context";
+import { MessageProvider } from "../../graphql/generated/codegen.generated";
+import { capitalize } from "../../utils/format.utils";
 
 import { MultiSelect } from "@mantine/core";
 import { useCallback } from "react";
-
-const data = [
-  { value: MessageProvider.Mongo, label: `Mongo` },
-  { value: MessageProvider.Postgres, label: `Postgres` },
-];
 
 const ProviderMultiSelect = (): JSX.Element => {
   const [providers, setProviders] = useProviders();
@@ -30,6 +29,8 @@ const ProviderMultiSelect = (): JSX.Element => {
       value={providers}
       onChange={onChange}
       data={data}
+      valueComponent={ProviderMultiSelectValue}
+      itemComponent={ProviderMultiSelectItem}
       label="Choose message providers"
       placeholder=""
       clearable
