@@ -1,3 +1,4 @@
+import MessageFeed from "../components/message-feed";
 import ProviderMultiSelect from "../components/provider-multi-select";
 import {
   MessageProvider,
@@ -28,6 +29,7 @@ const Home = (): JSX.Element => {
       <Stack>
         <Title>Micro Backends</Title>
         <ProviderMultiSelect />
+        <MessageFeed />
         <div>{content}</div>
       </Stack>
     </Center>
