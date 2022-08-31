@@ -1,28 +1,28 @@
+import { useProviders } from "../../context/providers.context";
 import { useMessageCreatedSubscription } from "../../graphql/generated/codegen.generated";
 
-import { Center, List, Loader, Title, Card } from "@mantine/core";
-import { useQueue } from "@mantine/hooks";
+import { Center, Loader, Title, Card, Stack } from "@mantine/core";
+import { useListState } from "@mantine/hooks";
 import { useEffect } from "react";
 
 import type { MessageCreatedPayload } from "../../graphql/generated/codegen.generated";
 
 const MessageFeed = (): JSX.Element => {
   const { data, loading, error } = useMessageCreatedSubscription();
-  const queue = useQueue<MessageCreatedPayload>({
-    initialValues: [],
-    limit: 5,
-  });
-
-  console.log(queue.state);
+  const [messages, messageHandlers] = useListState<MessageCreatedPayload>([]);
+  const [providers] = useProviders();
 
   useEffect(() => {
     if (
       data &&
-      !queue.state.includes(data.messageCreated) &&
-      !queue.queue.includes(data.messageCreated)
+      // record this message only if its provider is selected
+      providers.includes(data.messageCreated.provider)
     ) {
-      console.log(`adding`);
-      queue.add(data.messageCreated);
+      messageHandlers.append(data.messageCreated);
+
+      while (messages.length > 5) {
+        messageHandlers.shift();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
@@ -31,17 +31,24 @@ const MessageFeed = (): JSX.Element => {
 
   if (error) {
     content = <>Error: {error.message}</>;
-  } else if (loading) {
+  } else if (loading || messages.length === 0) {
     content = <Loader variant="bars" />;
   } else {
     content = (
-      <List>
-        {queue.state.map((messagePayload, idx) => (
-          <List.Item key={idx}>
-            {messagePayload.provider}: {messagePayload.message.data}
-          </List.Item>
+      <Stack justify="flex-end">
+        {messages.map((messagePayload, idx) => (
+          <div key={idx}>
+            <>
+              [{messagePayload.provider}]{` `}
+              {/*eslint-disable-next-line @typescript-eslint/ban-ts-comment*/}
+              {/*@ts-ignore*/}
+              {new Date(messagePayload.message.created).toLocaleTimeString()}:
+              {` `}
+              {messagePayload.message.data}
+            </>
+          </div>
         ))}
-      </List>
+      </Stack>
     );
   }
 
