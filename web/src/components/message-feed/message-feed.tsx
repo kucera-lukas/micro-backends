@@ -1,7 +1,9 @@
+import { FEED_MAX_SIZE } from "./constants";
+
 import { useProviders } from "../../context/providers.context";
 import { useMessageCreatedSubscription } from "../../graphql/generated/codegen.generated";
 
-import { Center, Loader, Title, Card, Stack } from "@mantine/core";
+import { Center, Loader, Stack, Text, Group, Accordion } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
 import { useEffect } from "react";
 
@@ -9,6 +11,8 @@ import type { MessageCreatedPayload } from "../../graphql/generated/codegen.gene
 
 const MessageFeed = (): JSX.Element => {
   const { data, loading, error } = useMessageCreatedSubscription();
+  // we don't need to use more efficient data structure as we only operate with
+  // 'FEED_MAX_SIZE' number of elements
   const [messages, messageHandlers] = useListState<MessageCreatedPayload>([]);
   const [providers] = useProviders();
 
@@ -20,55 +24,56 @@ const MessageFeed = (): JSX.Element => {
     ) {
       messageHandlers.append(data.messageCreated);
 
-      while (messages.length > 5) {
+      if (messages.length > FEED_MAX_SIZE) {
         messageHandlers.shift();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
-  let content;
-
-  if (error) {
-    content = <>Error: {error.message}</>;
-  } else if (loading || messages.length === 0) {
-    content = <Loader variant="bars" />;
-  } else {
-    content = (
-      <Stack justify="flex-end">
-        {messages.map((messagePayload, idx) => (
-          <div key={idx}>
-            <>
-              [{messagePayload.provider}]{` `}
-              {/*eslint-disable-next-line @typescript-eslint/ban-ts-comment*/}
-              {/*@ts-ignore*/}
-              {new Date(messagePayload.message.created).toLocaleTimeString()}:
-              {` `}
-              {messagePayload.message.data}
-            </>
-          </div>
-        ))}
-      </Stack>
+  const content =
+    loading || messages.length === 0 ? (
+      <Center>
+        <Loader variant="bars" />
+      </Center>
+    ) : (
+      <Group position="left">
+        <Stack justify="flex-end">
+          {messages.map((messagePayload, idx) => (
+            <div key={idx}>
+              <>
+                [{messagePayload.provider} - {messagePayload.message.id}]{` `}
+                {/*eslint-disable-next-line @typescript-eslint/ban-ts-comment*/}
+                {/*@ts-ignore*/}
+                {new Date(messagePayload.message.created).toLocaleTimeString()}:
+                {` `}
+                {messagePayload.message.data}
+              </>
+            </div>
+          ))}
+        </Stack>
+        {!!error && (
+          <Text
+            color="red"
+            size="sm"
+            mt="sm"
+          >
+            Error: {error.message}
+          </Text>
+        )}
+      </Group>
     );
-  }
 
   return (
-    <Card>
-      <Card.Section
-        withBorder
-        inheritPadding
-        py="xs"
-      >
-        <Title order={5}>Message Feed</Title>
-      </Card.Section>
-      <Card.Section
-        withBorder
-        inheritPadding
-        py="xs"
-      >
-        <Center>{content}</Center>
-      </Card.Section>
-    </Card>
+    <Accordion
+      defaultValue="feed"
+      variant="separated"
+    >
+      <Accordion.Item value="feed">
+        <Accordion.Control>Message Feed</Accordion.Control>
+        <Accordion.Panel>{content}</Accordion.Panel>
+      </Accordion.Item>
+    </Accordion>
   );
 };
 

@@ -15,19 +15,19 @@ const Home = (): JSX.Element => {
     },
   });
 
-  let content;
+  let content: JSX.Element;
   if (loading) {
-    content = <div>Loading...</div>;
+    content = <>Loading...</>;
   } else if (error) {
-    content = <div>Error {error.message}</div>;
+    content = <>Error {error.message}</>;
   } else {
-    content = <div>{data?.message.message.data}</div>;
+    content = <>{data?.message.message.data}</>;
   }
 
   return (
     <Center>
       <Stack>
-        <Title>Micro Backends</Title>
+        <Title>micro-backends</Title>
         <ProviderMultiSelect />
         <MessageFeed />
         <div>{content}</div>
