@@ -1,10 +1,13 @@
 package graphql
 
 import (
+	"net/http"
+
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
+	"github.com/gorilla/websocket"
 
 	"github.com/kucera-lukas/micro-backends/backend-service/pkg/adapter/controller"
 	"github.com/kucera-lukas/micro-backends/backend-service/pkg/adapter/resolver"
@@ -27,7 +30,11 @@ func NewServer(
 	srv.AddTransport(transport.Options{}) // nolint:exhaustivestruct
 	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
-	srv.AddTransport(transport.Websocket{}) // nolint:exhaustivestruct
+	srv.AddTransport(transport.Websocket{Upgrader: websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}}) // nolint:exhaustivestruct
 	srv.SetQueryCache(lru.New(lruQueryCacheSize))
 	srv.Use(extension.Introspection{})
 	srv.Use(extension.FixedComplexityLimit(complexityLimit))

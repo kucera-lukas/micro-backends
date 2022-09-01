@@ -1,22 +1,36 @@
+import scalarsLink from "./scalars";
+
 import {
   GRAPHQL_SERVER_URI,
   GRAPHQL_WS_SERVER_URI,
 } from "../config/enviroment";
 
-import { ApolloClient, HttpLink, InMemoryCache, split } from "@apollo/client";
+import {
+  ApolloClient,
+  ApolloLink,
+  HttpLink,
+  InMemoryCache,
+  split,
+} from "@apollo/client";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createClient } from "graphql-ws";
 
-const httpLink = new HttpLink({
-  uri: GRAPHQL_SERVER_URI,
-});
-
-const wsLink = new GraphQLWsLink(
-  createClient({
-    url: GRAPHQL_WS_SERVER_URI,
+const httpLink = ApolloLink.from([
+  scalarsLink,
+  new HttpLink({
+    uri: GRAPHQL_SERVER_URI,
   }),
-);
+]);
+
+const wsLink = ApolloLink.from([
+  scalarsLink,
+  new GraphQLWsLink(
+    createClient({
+      url: GRAPHQL_WS_SERVER_URI,
+    }),
+  ),
+]);
 
 // The split function takes three parameters:
 //
