@@ -8,10 +8,10 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "fmt": "prettier --write .",
-    "fmt:check": "prettier --check .",
-    "graphql:gen": "graphql-codegen --config src/graphql/codegen.yml"
+    "lint:fix": "npx eslint . --fix",
+    "fmt": "npx prettier --write .",
+    "fmt:check": "npx prettier --check .",
+    "graphql:gen": "npx graphql-codegen --config src/graphql/codegen.yml"
   },
   "dependencies": {
     "@apollo/client": "^3.6.9",
@@ -43,6 +43,7 @@
     "eslint-plugin-react-hooks": "^4.4.0",
     "eslint-plugin-sonarjs": "^0.15.0",
     "eslint-plugin-unicorn": "^42.0.0",
+    "prettier": "^2.7.1",
     "typescript": "^4.8.2",
     "vite": "^3.0.9",
     "vite-plugin-checker": "^0.5.0"
