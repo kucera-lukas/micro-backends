@@ -1,10 +1,9 @@
-import scalarsMap from "./scalars";
+import scalarsLink from "./scalars";
 
 import {
   GRAPHQL_SERVER_URI,
   GRAPHQL_WS_SERVER_URI,
 } from "../config/enviroment";
-import introspectionSchema from "../graphql/generated/introspection-schema.generated.json";
 
 import {
   ApolloClient,
@@ -15,17 +14,7 @@ import {
 } from "@apollo/client";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition } from "@apollo/client/utilities";
-import { withScalars } from "apollo-link-scalars";
-import { buildClientSchema } from "graphql";
 import { createClient } from "graphql-ws";
-
-import type { IntrospectionQuery } from "graphql";
-
-const schema = buildClientSchema(
-  introspectionSchema as unknown as IntrospectionQuery,
-);
-
-const scalarsLink = withScalars({ schema, typesMap: scalarsMap });
 
 const httpLink = ApolloLink.from([
   scalarsLink,

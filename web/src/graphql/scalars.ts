@@ -1,4 +1,10 @@
-const scalarsMap = {
+import schema from "./schema";
+
+import { withScalars } from "apollo-link-scalars";
+
+import type { FunctionsMap } from "apollo-link-scalars";
+
+const scalarsMap: FunctionsMap = {
   Time: {
     serialize: (parsed: unknown): string | undefined =>
       parsed instanceof Date ? parsed.toString() : undefined,
@@ -12,4 +18,6 @@ const scalarsMap = {
   },
 };
 
-export default scalarsMap;
+const scalarsLink = withScalars({ schema, typesMap: scalarsMap });
+
+export default scalarsLink;
