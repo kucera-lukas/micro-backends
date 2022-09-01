@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -119,11 +120,23 @@ func (r *messageRepository) List(
 	return data, nil
 }
 
+type messageData struct {
+	Data string `json:"data"`
+}
+
 func (r *messageRepository) NewMessage(
 	ctx context.Context,
 	delivery amqp091.Delivery,
 ) {
-	msg, err := r.Create(ctx, string(delivery.Body))
+	messageData := messageData{}
+	if err := json.Unmarshal(delivery.Body, &messageData); err != nil {
+		log.Printf("consume: failed to umarshal message data: %v\n", err)
+		nack(delivery)
+
+		return
+	}
+
+	msg, err := r.Create(ctx, messageData.Data)
 	if err != nil {
 		log.Printf("consume: failed to create message: %v\n", err)
 		nack(delivery)
