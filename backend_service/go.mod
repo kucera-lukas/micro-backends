@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/99designs/gqlgen v0.17.16
 	github.com/gin-gonic/gin v1.8.1
+	github.com/gorilla/websocket v1.5.0
 	github.com/joho/godotenv v1.4.0
 	github.com/rabbitmq/amqp091-go v1.4.0
 	github.com/rs/cors v1.8.2
@@ -23,7 +24,6 @@ require (
 	github.com/go-playground/validator/v10 v10.10.0 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

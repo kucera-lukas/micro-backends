@@ -48,16 +48,16 @@ const MessageFeed = (): JSX.Element => {
               </>
             </div>
           ))}
+          {!!error && (
+            <Text
+              color="red"
+              size="sm"
+              mt="sm"
+            >
+              Error: {error.message}
+            </Text>
+          )}
         </Stack>
-        {!!error && (
-          <Text
-            color="red"
-            size="sm"
-            mt="sm"
-          >
-            Error: {error.message}
-          </Text>
-        )}
       </Group>
     );
 
