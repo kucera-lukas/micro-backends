@@ -43,10 +43,7 @@ const MessageFeed = (): JSX.Element => {
             <div key={idx}>
               <>
                 [{messagePayload.provider} - {messagePayload.message.id}]{` `}
-                {/*eslint-disable-next-line @typescript-eslint/ban-ts-comment*/}
-                {/*@ts-ignore*/}
-                {new Date(messagePayload.message.created).toLocaleTimeString()}:
-                {` `}
+                {messagePayload.message.created.toLocaleTimeString()}:{` `}
                 {messagePayload.message.data}
               </>
             </div>
