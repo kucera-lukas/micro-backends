@@ -19,7 +19,7 @@
     "@mantine/hooks": "^5.1.0",
     "apollo-link-scalars": "^4.0.1",
     "graphql": "^16.6.0",
-    "graphql-ws": "^5.9.1",
+    "graphql-ws": "^5.10.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
