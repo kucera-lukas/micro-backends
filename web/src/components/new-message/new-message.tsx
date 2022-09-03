@@ -7,7 +7,9 @@ import { useCallback, useState } from "react";
 const NewMessage = (): JSX.Element => {
   const [providers] = useProviders();
   const [messageData, setMessageData] = useState<string>();
-  const [newMessageMutation, { loading, error }] = useNewMessageMutation();
+  const [newMessageMutation, { loading, error }] = useNewMessageMutation({
+    refetchQueries: [`messageCount`],
+  });
 
   const onCreate = useCallback(() => {
     if (messageData !== undefined) {
