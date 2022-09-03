@@ -24,7 +24,7 @@ const MessageFeed = (): JSX.Element => {
     ) {
       messageHandlers.append(data.messageCreated);
 
-      if (messages.length > FEED_MAX_SIZE) {
+      if (messages.length >= FEED_MAX_SIZE) {
         messageHandlers.shift();
       }
     }
