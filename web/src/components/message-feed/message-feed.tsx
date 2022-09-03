@@ -2,8 +2,9 @@ import { FEED_MAX_SIZE } from "./constants";
 
 import { useProviders } from "../../context/providers.context";
 import { useMessageCreatedSubscription } from "../../graphql/generated/codegen.generated";
+import ErrorText from "../errors/error.text";
 
-import { Center, Loader, Stack, Text, Group, Accordion } from "@mantine/core";
+import { Center, Loader, Stack, Group, Accordion, Title } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
 import { useEffect } from "react";
 
@@ -48,15 +49,7 @@ const MessageFeed = (): JSX.Element => {
               </>
             </div>
           ))}
-          {!!error && (
-            <Text
-              color="red"
-              size="sm"
-              mt="sm"
-            >
-              Error: {error.message}
-            </Text>
-          )}
+          {!!error && <ErrorText error={error.message} />}
         </Stack>
       </Group>
     );
@@ -67,7 +60,9 @@ const MessageFeed = (): JSX.Element => {
       variant="separated"
     >
       <Accordion.Item value="feed">
-        <Accordion.Control>Message Feed</Accordion.Control>
+        <Accordion.Control>
+          <Title size="md">Message Feed</Title>
+        </Accordion.Control>
         <Accordion.Panel>{content}</Accordion.Panel>
       </Accordion.Item>
     </Accordion>
