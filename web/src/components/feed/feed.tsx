@@ -46,15 +46,16 @@ const Feed = (): JSX.Element => {
       ) : (
         <Stack>
           {messages.map((messagePayload, idx) => (
-            <div key={idx}>
-              <Group position="apart">
-                <Text size="sm">
-                  {messagePayload.message.created.toLocaleTimeString()} |{` `}
-                  {messagePayload.message.data}
-                </Text>
-                {ICON_MAP[messagePayload.provider]}
-              </Group>
-            </div>
+            <Group
+              key={idx}
+              position="apart"
+            >
+              <Text size="sm">
+                {messagePayload.message.created.toLocaleTimeString()} |{` `}
+                {messagePayload.message.data}
+              </Text>
+              {ICON_MAP[messagePayload.provider]}
+            </Group>
           ))}
           {!!error && <ErrorText error={error.message} />}
         </Stack>
