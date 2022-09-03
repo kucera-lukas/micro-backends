@@ -1,4 +1,4 @@
-import { data } from "./constants";
+import { DATA } from "./constants";
 import ProviderMultiSelectItem from "./item.component";
 import ProviderMultiSelectValue from "./value.component";
 
@@ -28,12 +28,13 @@ const ProviderMultiSelect = (): JSX.Element => {
     <MultiSelect
       value={providers}
       onChange={onChange}
-      data={data}
+      data={DATA}
       valueComponent={ProviderMultiSelectValue}
       itemComponent={ProviderMultiSelectItem}
-      label="Choose message providers"
-      placeholder=""
+      label="Providers"
+      placeholder="Select from the dropdown"
       clearable
+      withAsterisk
     />
   );
 };
