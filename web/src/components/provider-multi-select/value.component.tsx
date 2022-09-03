@@ -1,4 +1,4 @@
-import { icons } from "./constants";
+import { ICON_MAP } from "./constants";
 
 import { Box, CloseButton } from "@mantine/core";
 
@@ -10,7 +10,7 @@ const ProviderMultiSelectValue = ({
   onRemove,
   ...others
 }: ProviderMultiSelectValueProps): JSX.Element => {
-  const icon = icons[value];
+  const icon = ICON_MAP[value];
 
   return (
     <div {...others}>

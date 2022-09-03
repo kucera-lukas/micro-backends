@@ -23,7 +23,7 @@ const ProviderGroup = ({
 
   return (
     <Group position="apart">
-      <Text>{title}</Text>
+      <Text size="sm">{title}</Text>
       {loading ? (
         <Loader />
       ) : (

@@ -1,16 +1,16 @@
-import { FEED_MAX_SIZE } from "./constants";
+import { FEED_MAX_SIZE, ICON_MAP } from "./constants";
 
 import { useProviders } from "../../context/providers.context";
 import { useMessageCreatedSubscription } from "../../graphql/generated/codegen.generated";
 import ErrorText from "../errors/error.text";
 
-import { Center, Loader, Stack, Group, Accordion, Title } from "@mantine/core";
+import { Center, Loader, Stack, Group, Accordion, Text } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
 import { useEffect } from "react";
 
 import type { MessageCreatedPayload } from "../../graphql/generated/codegen.generated";
 
-const MessageFeed = (): JSX.Element => {
+const Feed = (): JSX.Element => {
   const { data, loading, error } = useMessageCreatedSubscription();
   // we don't need to use more efficient data structure as we only operate with
   // 'FEED_MAX_SIZE' number of elements
@@ -38,20 +38,20 @@ const MessageFeed = (): JSX.Element => {
         <Loader variant="bars" />
       </Center>
     ) : (
-      <Group position="left">
-        <Stack justify="flex-end">
-          {messages.map((messagePayload, idx) => (
-            <div key={idx}>
-              <>
-                [{messagePayload.provider} - {messagePayload.message.id}]{` `}
-                {messagePayload.message.created.toLocaleTimeString()}:{` `}
+      <Stack>
+        {messages.map((messagePayload, idx) => (
+          <div key={idx}>
+            <Group position="apart">
+              <Text size="sm">
+                {messagePayload.message.created.toLocaleTimeString()} |{` `}
                 {messagePayload.message.data}
-              </>
-            </div>
-          ))}
-          {!!error && <ErrorText error={error.message} />}
-        </Stack>
-      </Group>
+              </Text>
+              {ICON_MAP[messagePayload.provider]}
+            </Group>
+          </div>
+        ))}
+        {!!error && <ErrorText error={error.message} />}
+      </Stack>
     );
 
   return (
@@ -61,7 +61,13 @@ const MessageFeed = (): JSX.Element => {
     >
       <Accordion.Item value="feed">
         <Accordion.Control>
-          <Title size="md">Message Feed</Title>
+          <Text size="sm">Feed</Text>
+          <Text
+            size="xs"
+            color="dimmed"
+          >
+            Latest messages from chosen providers
+          </Text>
         </Accordion.Control>
         <Accordion.Panel>{content}</Accordion.Panel>
       </Accordion.Item>
@@ -69,4 +75,4 @@ const MessageFeed = (): JSX.Element => {
   );
 };
 
-export default MessageFeed;
+export default Feed;

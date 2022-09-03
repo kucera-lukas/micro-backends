@@ -1,4 +1,4 @@
-import { icons } from "./constants";
+import { ICON_MAP } from "./constants";
 
 import { Box } from "@mantine/core";
 import { forwardRef } from "react";
@@ -9,7 +9,7 @@ const ProviderMultiSelectItem = forwardRef<
   HTMLDivElement,
   ProviderMultiSelectItemProps
 >(({ label, value, ...others }, ref) => {
-  const icon = value && icons[value];
+  const icon = value && ICON_MAP[value];
 
   return (
     <div

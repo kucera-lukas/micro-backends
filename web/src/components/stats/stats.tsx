@@ -3,7 +3,7 @@ import ProviderGroup from "./provider.group";
 import { useProviders } from "../../context/providers.context";
 import { MessageProvider } from "../../graphql/generated/codegen.generated";
 
-import { Accordion, Stack, Title } from "@mantine/core";
+import { Accordion, Stack, Text } from "@mantine/core";
 
 const Stats = (): JSX.Element => {
   const [providers] = useProviders();
@@ -12,7 +12,13 @@ const Stats = (): JSX.Element => {
     <Accordion variant="separated">
       <Accordion.Item value="stats">
         <Accordion.Control>
-          <Title size="md">Stats</Title>
+          <Text size="sm">Stats</Text>
+          <Text
+            size="xs"
+            color="dimmed"
+          >
+            Message count statistics
+          </Text>
         </Accordion.Control>
         <Accordion.Panel>
           <Stack>
