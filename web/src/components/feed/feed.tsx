@@ -2,9 +2,10 @@ import { FEED_MAX_SIZE, ICON_MAP } from "./constants";
 
 import { useProviders } from "../../context/providers.context";
 import { useMessageCreatedSubscription } from "../../graphql/generated/codegen.generated";
+import AccordionLayout from "../../layouts/accordion.layout";
 import ErrorText from "../errors/error.text";
 
-import { Center, Loader, Stack, Group, Accordion, Text } from "@mantine/core";
+import { Center, Loader, Stack, Group, Text } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
 import { useEffect } from "react";
 
@@ -32,46 +33,33 @@ const Feed = (): JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
-  const content =
-    loading || messages.length === 0 ? (
-      <Center>
-        <Loader variant="bars" />
-      </Center>
-    ) : (
-      <Stack>
-        {messages.map((messagePayload, idx) => (
-          <div key={idx}>
-            <Group position="apart">
-              <Text size="sm">
-                {messagePayload.message.created.toLocaleTimeString()} |{` `}
-                {messagePayload.message.data}
-              </Text>
-              {ICON_MAP[messagePayload.provider]}
-            </Group>
-          </div>
-        ))}
-        {!!error && <ErrorText error={error.message} />}
-      </Stack>
-    );
-
   return (
-    <Accordion
-      defaultValue="feed"
-      variant="separated"
+    <AccordionLayout
+      value="feed"
+      title="Feed"
+      description="Latest messages from chosen providers"
     >
-      <Accordion.Item value="feed">
-        <Accordion.Control>
-          <Text size="sm">Feed</Text>
-          <Text
-            size="xs"
-            color="dimmed"
-          >
-            Latest messages from chosen providers
-          </Text>
-        </Accordion.Control>
-        <Accordion.Panel>{content}</Accordion.Panel>
-      </Accordion.Item>
-    </Accordion>
+      {loading || messages.length === 0 ? (
+        <Center>
+          <Loader variant="bars" />
+        </Center>
+      ) : (
+        <Stack>
+          {messages.map((messagePayload, idx) => (
+            <div key={idx}>
+              <Group position="apart">
+                <Text size="sm">
+                  {messagePayload.message.created.toLocaleTimeString()} |{` `}
+                  {messagePayload.message.data}
+                </Text>
+                {ICON_MAP[messagePayload.provider]}
+              </Group>
+            </div>
+          ))}
+          {!!error && <ErrorText error={error.message} />}
+        </Stack>
+      )}
+    </AccordionLayout>
   );
 };
 

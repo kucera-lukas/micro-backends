@@ -1,7 +1,8 @@
 import { useProviders } from "../../context/providers.context";
 import { useNewMessageMutation } from "../../graphql/generated/codegen.generated";
+import AccordionLayout from "../../layouts/accordion.layout";
 
-import { TextInput, Button, Stack, Accordion, Text } from "@mantine/core";
+import { TextInput, Button, Stack } from "@mantine/core";
 import { useCallback, useEffect, useState } from "react";
 
 const NewMessage = (): JSX.Element => {
@@ -32,39 +33,30 @@ const NewMessage = (): JSX.Element => {
   }, [mutationError]);
 
   return (
-    <div>
-      <Accordion
-        defaultValue="new-message"
-        variant="separated"
-      >
-        <Accordion.Item value="new-message">
-          <Accordion.Control>
-            <Text size="sm">New message</Text>
-          </Accordion.Control>
-          <Accordion.Panel>
-            <Stack spacing="xs">
-              <TextInput
-                value={messageData}
-                onChange={(event) => setMessageData(event.currentTarget.value)}
-                disabled={loading}
-                error={error}
-                label="Data"
-                description="Message will be created by each provider"
-                withAsterisk
-              />
-              <Button
-                disabled={loading}
-                value={messageData}
-                onClick={onCreate}
-                style={{ alignSelf: `flex-end` }}
-              >
-                Create
-              </Button>
-            </Stack>
-          </Accordion.Panel>
-        </Accordion.Item>
-      </Accordion>
-    </div>
+    <AccordionLayout
+      value="new-message"
+      title="New message"
+    >
+      <Stack spacing="xs">
+        <TextInput
+          value={messageData}
+          onChange={(event) => setMessageData(event.currentTarget.value)}
+          disabled={loading}
+          error={error}
+          label="Data"
+          description="Message will be created by each provider"
+          withAsterisk
+        />
+        <Button
+          disabled={loading}
+          value={messageData}
+          onClick={onCreate}
+          style={{ alignSelf: `flex-end` }}
+        >
+          Create
+        </Button>
+      </Stack>
+    </AccordionLayout>
   );
 };
 
