@@ -11,5 +11,4 @@ RUN go install github.com/cosmtrek/air@latest
 COPY . ./
 COPY .env .
 
-EXPOSE 80
 ENTRYPOINT ["/go/bin/air"]
