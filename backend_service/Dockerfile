@@ -10,7 +10,7 @@ RUN go mod download
 COPY . ./
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags="-w -s" -v -o mongo cmd/backend/backend.go
+    -ldflags="-w -s" -v -o backend cmd/backend/backend.go
 
 FROM alpine:latest
 
