@@ -72,4 +72,4 @@ jobs:
           envs: SHA
           script_stop: true
           script: |
-            bash micro-backends/deploy.sh
+            SHA=$SHA bash micro-backends/deploy.sh
