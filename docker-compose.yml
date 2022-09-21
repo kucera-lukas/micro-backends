@@ -1,8 +1,10 @@
+version: "3"
+
 services:
   backend_service:
     build:
       context: backend_service
-      dockerfile: Dockerfile
+      dockerfile: backend_service/Dockerfile.dev
     ports:
       - "8080:8080"
     env_file:
@@ -19,7 +21,7 @@ services:
   mongo_service:
     build:
       context: mongo_service
-      dockerfile: Dockerfile
+      dockerfile: mongo_service/Dockerfile.dev
     ports:
       - "8081:8081"
     env_file:
@@ -29,15 +31,13 @@ services:
     networks:
       - micro_backends
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
+      - rabbitmq
+      - mongodb
 
   postgres_service:
     build:
       context: postgres_service
-      dockerfile: Dockerfile
+      dockerfile: postgres_service/Dockerfile.dev
     ports:
       - "8082:8082"
     env_file:
@@ -47,10 +47,8 @@ services:
     networks:
       - micro_backends
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
+      - rabbitmq
+      - postgres
 
   rabbitmq:
     image: rabbitmq:management

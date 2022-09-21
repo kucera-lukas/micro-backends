@@ -1,15 +1,21 @@
-FROM golang:1.18 as runner
+FROM golang:1.18 as builder
 
-WORKDIR /app
+WORKDIR /build
 
 COPY go.mod ./
 COPY go.sum ./
 
 RUN go mod download
-RUN go install github.com/cosmtrek/air@latest
 
 COPY . ./
-COPY .env .
 
-EXPOSE 80
-ENTRYPOINT ["/go/bin/air"]
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags="-w -s" -v -o backend cmd/backend/backend.go
+
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=builder /build/backend ./backend
+
+ENTRYPOINT ["./backend"]

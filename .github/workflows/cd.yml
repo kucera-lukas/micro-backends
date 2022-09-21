@@ -1,0 +1,75 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches: [main, feat/gcp-deployment]
+
+jobs:
+  build:
+    name: build
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push backend_service to Docker Hub
+        uses: docker/build-push-action@v3
+        with:
+          context: backend_service
+          push: true
+          tags: |
+            lukucera/micro-backends-backend:latest
+            lukucera/micro-backends-backend:sha-${{ github.sha }}
+
+      - name: Build and Push mongo_service to Docker Hub
+        uses: docker/build-push-action@v3
+        with:
+          context: mongo_service
+          push: true
+          tags: |
+            lukucera/micro-backends-mongo:latest
+            lukucera/micro-backends-mongo:sha-${{ github.sha }}
+
+      - name: Build and Push postgres_service to Docker Hub
+        uses: docker/build-push-action@v3
+        with:
+          context: postgres_service
+          push: true
+          tags: |
+            lukucera/micro-backends-postgres:latest
+            lukucera/micro-backends-postgres:sha-${{ github.sha }}
+
+  deploy:
+    name: deploy
+    runs-on: ${{ matrix.os }}
+    needs: [build]
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Deploy to Google Compute Engine via SSH action
+        uses: appleboy/ssh-action@v0.1.3
+        env:
+          SHA: ${{ github.sha }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USERNAME }}
+          key: ${{ secrets.DEPLOY_SSHKEY }}
+          passphrase: ${{ secrets.DEPLOY_PASSPHRASE }}
+          envs: SHA
+          script_stop: true
+          script: |
+            SHA=$SHA bash micro-backends/deploy.sh
