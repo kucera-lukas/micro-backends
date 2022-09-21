@@ -13,6 +13,8 @@ export default defineConfig({
         lintCommand: 'eslint "./src/**/*.{ts,tsx}" --fix',
       },
     }),
-    VitePluginRadar({ analytics: { id: `G-S8W0PX7KJW` } }),
+    VitePluginRadar({
+      analytics: { id: process.env.VITE_GA_MEASUREMENT_ID as string },
+    }),
   ],
 });
