@@ -14,7 +14,7 @@ export default defineConfig({
       },
     }),
     VitePluginRadar({
-      analytics: { id: process.env.VITE_GA_MEASUREMENT_ID as string },
+      analytics: { id: process.env.VITE_GA_MEASUREMENT_ID },
     }),
   ],
 });
