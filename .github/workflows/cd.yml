@@ -24,7 +24,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push backend_service to Docker Hub
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: backend_service
           push: true
@@ -33,7 +33,7 @@ jobs:
             lukucera/micro-backends-backend:sha-${{ github.sha }}
 
       - name: Build and Push mongo_service to Docker Hub
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: mongo_service
           push: true
@@ -42,7 +42,7 @@ jobs:
             lukucera/micro-backends-mongo:sha-${{ github.sha }}
 
       - name: Build and Push postgres_service to Docker Hub
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: postgres_service
           push: true
