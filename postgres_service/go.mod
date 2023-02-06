@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/jackc/pgx/v4 v4.17.1
-	github.com/joho/godotenv v1.4.0
+	github.com/joho/godotenv v1.5.1
 	github.com/rabbitmq/amqp091-go v1.4.0
 	github.com/spf13/viper v1.12.0
 	google.golang.org/grpc v1.49.0
