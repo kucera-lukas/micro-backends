@@ -6,7 +6,7 @@ require (
 	github.com/joho/godotenv v1.4.0
 	github.com/rabbitmq/amqp091-go v1.4.0
 	github.com/spf13/viper v1.12.0
-	go.mongodb.org/mongo-driver v1.10.1
+	go.mongodb.org/mongo-driver v1.11.3
 	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.28.1
 )
