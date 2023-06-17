@@ -60,4 +60,4 @@ pre-commit install
 
 ## License
 
-Developed under the [MIT](https://github.com/stegoer/server/blob/master/LICENSE) license.
+Developed under the [MIT](https://github.com/kucera-lukas/micro-backends/blob/master/LICENSE) license.
