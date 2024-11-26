@@ -10,7 +10,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.4.0
 	github.com/rs/cors v1.8.2
 	github.com/spf13/viper v1.12.0
-	github.com/vektah/gqlparser/v2 v2.5.0
+	github.com/vektah/gqlparser/v2 v2.5.1
 	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.28.1
 )
