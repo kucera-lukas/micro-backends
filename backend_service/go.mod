@@ -6,7 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.17.16
 	github.com/gin-gonic/gin v1.8.1
 	github.com/gorilla/websocket v1.5.0
-	github.com/joho/godotenv v1.4.0
+	github.com/joho/godotenv v1.5.1
 	github.com/rabbitmq/amqp091-go v1.4.0
 	github.com/rs/cors v1.8.2
 	github.com/spf13/viper v1.12.0
